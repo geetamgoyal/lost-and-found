@@ -160,9 +160,12 @@ app.use(express.json());
 // Serve static frontend files
 app.use(express.static(__dirname));
 
-// Route root to lost&found.html
+// Route root to index.html (with fallback)
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'lost&found.html'));
+  const htmlFile = fs.existsSync(path.join(__dirname, 'index.html'))
+    ? 'index.html'
+    : 'lost&found.html';
+  res.sendFile(path.join(__dirname, htmlFile));
 });
 
 // API Routes
