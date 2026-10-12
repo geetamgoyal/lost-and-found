@@ -159,6 +159,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Check if Express backend is running
 async function testBackendConnection() {
+  state.isBackendOnline = false;
+
+  console.log(
+    "Searchify Demo Mode: Using localStorage"
+  );
+
   try {
     const res = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(2000) });
     if (res.ok) {
