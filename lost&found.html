@@ -4,96 +4,286 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Searchify</title>
+    <title>Searchify - Smart Campus Lost &amp; Found Portal</title>
     <link rel="stylesheet" href="lost&found.css">
+    <script src="app.js" defer></script>
 </head>
 
 <body>
+    <!-- Site Navigation -->
     <header class="site-header">
         <div class="header-container">
             <nav class="nav-bar">
-                <div class="logo-title">
-                    <img src="assets/Searchify-Logo-removebg-preview.png" alt="" width="140">
+                <div class="logo-title" data-scroll-to="hero-section" style="cursor: pointer;">
+                    <img src="assets/Searchify-Logo-removebg-preview.png" alt="Searchify Logo" width="140">
                     <h2>Searchify</h2>
                 </div>
 
                 <div class="nav-buttons">
-                    <button type="button" class="buttons">Home</button>
-                    <button type="button" class="buttons">Browse Items</button>
-                    <button type="button" class="buttons">Report Lost</button>
-                    <button type="button" class="buttons">Report Found</button>
+                    <button type="button" class="buttons" data-scroll-to="hero-section">Home</button>
+                    <button type="button" class="buttons" data-scroll-to="browse-section">Browse Items</button>
+                    <button type="button" class="buttons" id="nav-report-lost">Report Lost</button>
+                    <button type="button" class="buttons" id="nav-report-found">Report Found</button>
                 </div>
 
-                <div class="login">
-                    <button type="button" class="signin-btn">Sign In</button>
+                <div class="login" id="auth-container">
+                    <button type="button" id="signin-btn" class="signin-btn">Sign In</button>
                 </div>
             </nav>
         </div>
     </header>
 
-    <div class="hero-container">
-        <div class="hero">
-            <h1 class="hero-title">Lost Something On Campus?</h1>
-            <p class="hero-subtitle">Find your belongings quickly using my smart Lost &amp; Found Portal.</p>
-            <input type="text" placeholder="Search by item name, category or location..." class="search-btn">
+    <!-- Hero Section -->
+    <main>
+        <section class="hero-container" id="hero-section">
+            <div class="hero">
+                <h1 class="hero-title">Lost Something On Campus?</h1>
+                <p class="hero-subtitle">Find your belongings quickly using my smart Lost &amp; Found Portal.</p>
+                
+                <div class="search-box-wrapper">
+                    <input type="text" id="hero-search-input" placeholder="Search by item name, category or location..." class="search-btn">
+                </div>
 
-            <div class="hero-btns">
-                <button type="button" class="hero-btn1">Report Lost</button>
-                <button type="button" class="hero-btn2">Report Found</button>
+                <div class="hero-btns">
+                    <button type="button" id="hero-report-lost" class="hero-btn1">Report Lost</button>
+                    <button type="button" id="hero-report-found" class="hero-btn2">Report Found</button>
+                </div>
+            </div>
+            <div class="hero-illustration">
+                <img src="assets/Items-illustration1.png" alt="Lost and Found Illustration" width="450">
+            </div>
+        </section>
+
+        <!-- Stats Section -->
+        <section class="stats-section">
+            <h2 class="stats-heading">Portal Statistics</h2>
+            <p class="stats-subheading">Helping Students Reconnect With Their Belongings</p>
+
+            <div class="card-container">
+                <div class="card">
+                    <p class="c1" id="stat-lost">154</p>
+                    <p class="c2">Lost Items</p>
+                </div>
+                <div class="card">
+                    <p class="c1" id="stat-found">94</p>
+                    <p class="c2">Found Items</p>
+                </div>
+                <div class="card">
+                    <p class="c1" id="stat-success">88%</p>
+                    <p class="c2">Success Rate</p>
+                </div>
+                <div class="card">
+                    <p class="c1" id="stat-users">500+</p>
+                    <p class="c2">Active Users</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Browse / Items Section -->
+        <section class="lost-section" id="browse-section">
+            <h2 class="lost-heading">Campus Lost &amp; Found Items</h2>
+            <p class="lost-subheading">Search, filter by category, or claim recently reported items</p>
+
+            <!-- Filter Controls Toolbar -->
+            <div class="filter-toolbar">
+                <div class="filter-tabs">
+                    <button type="button" class="filter-tab active" data-type="all">
+                        All Items <span class="tab-count" id="tab-count-all">(8)</span>
+                    </button>
+                    <button type="button" class="filter-tab" data-type="lost">
+                        Lost Items <span class="tab-count" id="tab-count-lost">(4)</span>
+                    </button>
+                    <button type="button" class="filter-tab" data-type="found">
+                        Found Items <span class="tab-count" id="tab-count-found">(4)</span>
+                    </button>
+                    <button type="button" class="filter-tab" data-type="claimed">
+                        Claimed <span class="tab-count" id="tab-count-claimed">(2)</span>
+                    </button>
+                </div>
+
+                <div class="filter-category-wrapper">
+                    <select id="category-filter" class="category-select" aria-label="Filter by category">
+                        <option value="all">All Categories</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="ID & Cards">ID &amp; Cards</option>
+                        <option value="Wallets & Keys">Wallets &amp; Keys</option>
+                        <option value="Books & Notes">Books &amp; Notes</option>
+                        <option value="Clothing & Personal">Clothing &amp; Personal</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
             </div>
 
-        </div>
-        <div>
-            <img src="assets/Items-illustration1.png" alt="" width="450">
+            <!-- Dynamic Items Grid -->
+            <div class="items-grid" id="items-grid">
+                <!-- Rendered dynamically via app.js -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Report Item Modal -->
+    <div class="modal-backdrop" id="report-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="report-modal-title">Report an Item</h3>
+                <button type="button" class="modal-close-btn" onclick="closeAllModals()">&times;</button>
+            </div>
+            <form id="report-item-form" class="modal-form">
+                <div class="form-group">
+                    <label class="form-label">Report Type</label>
+                    <div class="type-radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="report-type" value="lost" checked>
+                            <span class="radio-pill radio-pill-lost">Lost Item</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="report-type" value="found">
+                            <span class="radio-pill radio-pill-found">Found Item</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="report-title">Item Name / Title *</label>
+                    <input type="text" id="report-title" name="title" required placeholder="e.g. Apple AirPods Pro with white case" class="form-input">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group form-col">
+                        <label class="form-label" for="report-category">Category *</label>
+                        <select id="report-category" name="category" required class="form-select">
+                            <option value="Electronics">Electronics</option>
+                            <option value="ID & Cards">ID &amp; Cards</option>
+                            <option value="Wallets & Keys">Wallets &amp; Keys</option>
+                            <option value="Books & Notes">Books &amp; Notes</option>
+                            <option value="Clothing & Personal">Clothing &amp; Personal</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group form-col">
+                        <label class="form-label" for="report-date">Date *</label>
+                        <input type="date" id="report-date" name="date" required class="form-input">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="report-location">Campus Location *</label>
+                    <input type="text" id="report-location" name="location" required placeholder="e.g. Library 2nd floor, Table 12" class="form-input">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="report-desc">Detailed Description</label>
+                    <textarea id="report-desc" name="description" rows="3" placeholder="Provide distinct characteristics, color, brand, condition..." class="form-textarea"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group form-col">
+                        <label class="form-label" for="report-contact-name">Your Name</label>
+                        <input type="text" id="report-contact-name" name="contactName" placeholder="e.g. Alex Turner" class="form-input">
+                    </div>
+                    <div class="form-group form-col">
+                        <label class="form-label" for="report-contact-email">Campus Email</label>
+                        <input type="email" id="report-contact-email" name="contactEmail" placeholder="student@campus.edu" class="form-input">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="report-contact-phone">Phone Number (Optional)</label>
+                    <input type="tel" id="report-contact-phone" name="contactPhone" placeholder="+1 (555) 000-0000" class="form-input">
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="closeAllModals()">Cancel</button>
+                    <button type="submit" class="btn-primary">Submit Report</button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <section class="stats-section">
+    <!-- Item Detail & Claim Modal -->
+    <div class="modal-backdrop" id="detail-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title-wrapper">
+                    <span id="detail-category" class="category-pill">📦 Category</span>
+                    <span id="detail-status" class="status-badge badge-lost">LOST</span>
+                </div>
+                <button type="button" class="modal-close-btn" onclick="closeAllModals()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h2 id="detail-title" class="detail-heading">Item Title</h2>
+                <p id="detail-desc" class="detail-description">Full item description text goes here...</p>
 
-        <h2 class="stats-heading">Portal Statistics</h2>
-        <p class="stats-subheading">Helping Students Reconnect With Their Belongings</p>
-
-        <div class="card-container">
-            <div class="card">
-                <p class="c1">152</p>
-                <p class="c2">Lost Items</p>
+                <div class="detail-meta-grid">
+                    <div class="detail-meta-box">
+                        <span class="meta-label">Location:</span>
+                        <span id="detail-location" class="meta-val">Central Library</span>
+                    </div>
+                    <div class="detail-meta-box">
+                        <span class="meta-label">Reported Date:</span>
+                        <span id="detail-date" class="meta-val">Oct 12, 2026</span>
+                    </div>
+                    <div class="detail-meta-box">
+                        <span class="meta-label">Reported By:</span>
+                        <span id="detail-reporter" class="meta-val">Student Name</span>
+                    </div>
+                    <div class="detail-meta-box">
+                        <span class="meta-label">Contact Email:</span>
+                        <span id="detail-email" class="meta-val">student@campus.edu</span>
+                    </div>
+                    <div class="detail-meta-box">
+                        <span class="meta-label">Contact Phone:</span>
+                        <span id="detail-phone" class="meta-val">Not provided</span>
+                    </div>
+                </div>
             </div>
-            <div class="card">
-                <p class="c1">95</p>
-                <p class="c2">Found Items</p>
-            </div>
-            <div class="card">
-                <p class="c1">89%</p>
-                <p class="c2">Success Rate</p>
-            </div>
-            <div class="card">
-                <p class="c1">500+</p>
-                <p class="c2">Active User</p>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="closeAllModals()">Close</button>
+                <button type="button" id="detail-claim-btn" class="btn-primary">✓ Claim Item</button>
             </div>
         </div>
+    </div>
 
-    </section>
+    <!-- Sign In / Auth Modal -->
+    <div class="modal-backdrop" id="auth-modal">
+        <div class="modal-card modal-card-sm">
+            <div class="modal-header">
+                <h3>Campus Portal Sign In</h3>
+                <button type="button" class="modal-close-btn" onclick="closeAllModals()">&times;</button>
+            </div>
+            <form id="auth-form" class="modal-form">
+                <p class="auth-subtitle">Sign in to report items, track status, and claim belongings.</p>
 
-    <section class="lost-section">
+                <div class="form-group">
+                    <label class="form-label" for="auth-name">Full Name</label>
+                    <input type="text" id="auth-name" placeholder="Alex Patel" class="form-input">
+                </div>
 
-        <h2 class="lost-heading">Recently Lost Items</h2>
+                <div class="form-group">
+                    <label class="form-label" for="auth-email">Campus Email *</label>
+                    <input type="email" id="auth-email" required placeholder="student@campus.edu" class="form-input">
+                </div>
 
-        <div class="lost-container">
-            <div class="lost-card">
-                a
-            </div>
-            <div class="lost-card">
-                b
-            </div>
-            <div class="lost-card">
-                c
-            </div>
-            <div class="lost-card">
-                d
-            </div>
+                <div class="form-group">
+                    <label class="form-label" for="auth-password">Password *</label>
+                    <input type="password" id="auth-password" required placeholder="••••••••" class="form-input">
+                </div>
+
+                <div class="demo-login-box">
+                    <button type="button" class="btn-demo-creds" onclick="fillDemoUser()">⚡ Quick Fill Demo Student</button>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="closeAllModals()">Cancel</button>
+                    <button type="submit" class="btn-primary">Sign In</button>
+                </div>
+            </form>
         </div>
-    </section>
+    </div>
 
+    <!-- Toast Notifications Container -->
+    <div class="toast-container" id="toast-container"></div>
 </body>
 
 </html>

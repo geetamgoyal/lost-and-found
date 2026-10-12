@@ -1,0 +1,24 @@
+{
+  "name": "lost-and-found",
+  "version": "1.0.0",
+  "description": "Searchify - Campus Lost & Found Web Portal with Node.js Backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/geetamgoyal/lost-and-found.git"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/geetamgoyal/lost-and-found/issues"
+  },
+  "homepage": "https://github.com/geetamgoyal/lost-and-found#readme",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.3.0"
+  }
+}
