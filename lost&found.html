@@ -14,7 +14,7 @@
     <header class="site-header">
         <div class="header-container">
             <nav class="nav-bar">
-                <div class="logo-title" data-scroll-to="hero-section" style="cursor: pointer;">
+                <div class="logo-title" data-scroll-to="hero-section">
                     <img src="assets/Searchify-Logo-removebg-preview.png" alt="Searchify Logo" width="140">
                     <h2>Searchify</h2>
                 </div>
@@ -39,7 +39,7 @@
             <div class="hero">
                 <h1 class="hero-title">Lost Something On Campus?</h1>
                 <p class="hero-subtitle">Find your belongings quickly using my smart Lost &amp; Found Portal.</p>
-                
+
                 <div class="search-box-wrapper">
                     <input type="text" id="hero-search-input" placeholder="Search by item name, category or location..." class="search-btn">
                 </div>
@@ -257,17 +257,17 @@
 
                 <div class="form-group">
                     <label class="form-label" for="auth-name">Full Name</label>
-                    <input type="text" id="auth-name" placeholder="Alex Patel" class="form-input">
+                    <input type="text" id="auth-name" autocomplete="name" placeholder="Alex Patel" class="form-input">
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="auth-email">Campus Email *</label>
-                    <input type="email" id="auth-email" required placeholder="student@campus.edu" class="form-input">
+                    <input type="email" id="auth-email" autocomplete="email" required placeholder="student@campus.edu" class="form-input">
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="auth-password">Password *</label>
-                    <input type="password" id="auth-password" required placeholder="••••••••" class="form-input">
+                    <input type="password" id="auth-password" autocomplete="current-password" required placeholder="••••••••" class="form-input">
                 </div>
 
                 <div class="demo-login-box">
