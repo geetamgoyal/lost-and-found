@@ -23,6 +23,7 @@ const DEFAULT_ITEMS = [
     location: "Central Library, 2nd Floor Study Area",
     date: "2026-10-11",
     description: "White MagSafe charging case with a small blue silicone carabiner strap. Lost around 4:30 PM.",
+    image: "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=600&auto=format&fit=crop&q=80",
     contactName: "Alex Turner",
     contactEmail: "alex.turner@campus.edu",
     contactPhone: "+1 (555) 019-2834",
@@ -37,6 +38,7 @@ const DEFAULT_ITEMS = [
     location: "Main Dining Hall, Table 18",
     date: "2026-10-12",
     description: "Student ID card for Emily Chen (ID #CS-2025-4412). Handed over to the front desk.",
+    image: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=600&auto=format&fit=crop&q=80",
     contactName: "Campus Dining Staff",
     contactEmail: "dining-lost@campus.edu",
     contactPhone: "+1 (555) 014-9921",
@@ -51,6 +53,7 @@ const DEFAULT_ITEMS = [
     location: "Recreation Center Gym, Court 2",
     date: "2026-10-10",
     description: "Dark blue bottle with NASA and National Parks vinyl stickers on the front. Has a dented bottom rim.",
+    image: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=600&auto=format&fit=crop&q=80",
     contactName: "Marcus Bell",
     contactEmail: "m.bell@campus.edu",
     contactPhone: "+1 (555) 018-7733",
@@ -65,6 +68,7 @@ const DEFAULT_ITEMS = [
     location: "Engineering Hall, Room 304",
     date: "2026-10-12",
     description: "Black casing with initials 'J.K.' engraved on the slide-on cover. Battery was at 60%.",
+    image: "https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?w=600&auto=format&fit=crop&q=80",
     contactName: "TA Sarah Miller",
     contactEmail: "s.miller@campus.edu",
     contactPhone: "+1 (555) 012-3489",
@@ -79,6 +83,7 @@ const DEFAULT_ITEMS = [
     location: "North Campus Bus Terminal",
     date: "2026-10-12",
     description: "Contains metro transit card and library pass. No cash, but sentimental value.",
+    image: "https://images.unsplash.com/photo-1627123424574-724758594e93?w=600&auto=format&fit=crop&q=80",
     contactName: "Jordan Patel",
     contactEmail: "jordan.p@campus.edu",
     contactPhone: "+1 (555) 016-5541",
@@ -88,11 +93,12 @@ const DEFAULT_ITEMS = [
   {
     id: "item-6",
     title: "Set of Dorm Keys with Red Lanyard",
-    "type": "found",
+    type: "found",
     category: "Wallets & Keys",
     location: "Science Quad Garden Bench",
     date: "2026-10-09",
     description: "Two brass keys, one electronic fob, attached to a crimson university lanyard.",
+    image: "https://images.unsplash.com/photo-1582139329536-e7284fece509?w=600&auto=format&fit=crop&q=80",
     contactName: "Campus Security",
     contactEmail: "security@campus.edu",
     contactPhone: "+1 (555) 011-2000",
@@ -107,6 +113,7 @@ const DEFAULT_ITEMS = [
     location: "Chemistry Building, 1st Floor Lobby",
     date: "2026-10-08",
     description: "Five-star purple spiral notebook with handwritten notes from Chem 201. Urgent need before midterm!",
+    image: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80",
     contactName: "Sophia Taylor",
     contactEmail: "s.taylor@campus.edu",
     contactPhone: "+1 (555) 017-8890",
@@ -121,6 +128,7 @@ const DEFAULT_ITEMS = [
     location: "Student Union, Quiet Study Lounge",
     date: "2026-10-07",
     description: "Silver/grey headphones found in zippered travel case left on sofa near the west window.",
+    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80",
     contactName: "David Kim",
     contactEmail: "david.kim@campus.edu",
     contactPhone: "+1 (555) 015-6672",
@@ -155,7 +163,8 @@ function writeItems(items) {
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Serve static frontend files
 app.use(express.static(__dirname));
@@ -259,7 +268,7 @@ app.get('/api/items/:id', (req, res) => {
 
 // Create new item (Report Lost or Found)
 app.post('/api/items', (req, res) => {
-  const { title, type, category, location, date, description, contactName, contactEmail, contactPhone } = req.body;
+  const { title, type, category, location, date, description, contactName, contactEmail, contactPhone, image } = req.body;
 
   if (!title || !type || !category || !location) {
     return res.status(400).json({ error: 'Missing required fields: title, type, category, and location are mandatory.' });
@@ -274,6 +283,7 @@ app.post('/api/items', (req, res) => {
     location: location.trim(),
     date: date || new Date().toISOString().split('T')[0],
     description: (description || '').trim(),
+    image: image && typeof image === 'string' && image.trim() !== '' ? image.trim() : null,
     contactName: (contactName || 'Anonymous Student').trim(),
     contactEmail: (contactEmail || '').trim(),
     contactPhone: (contactPhone || '').trim(),

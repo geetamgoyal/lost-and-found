@@ -18,6 +18,7 @@ const FALLBACK_DEFAULT_ITEMS = [
     location: "Central Library, 2nd Floor Study Area",
     date: "2026-10-11",
     description: "White MagSafe charging case with a small blue silicone carabiner strap. Lost around 4:30 PM.",
+    image: "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=600&auto=format&fit=crop&q=80",
     contactName: "Alex Turner",
     contactEmail: "alex.turner@campus.edu",
     contactPhone: "+1 (555) 019-2834",
@@ -32,6 +33,7 @@ const FALLBACK_DEFAULT_ITEMS = [
     location: "Main Dining Hall, Table 18",
     date: "2026-10-12",
     description: "Student ID card for Emily Chen (ID #CS-2025-4412). Handed over to the front desk.",
+    image: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=600&auto=format&fit=crop&q=80",
     contactName: "Campus Dining Staff",
     contactEmail: "dining-lost@campus.edu",
     contactPhone: "+1 (555) 014-9921",
@@ -46,6 +48,7 @@ const FALLBACK_DEFAULT_ITEMS = [
     location: "Recreation Center Gym, Court 2",
     date: "2026-10-10",
     description: "Dark blue bottle with NASA and National Parks vinyl stickers on the front. Has a dented bottom rim.",
+    image: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=600&auto=format&fit=crop&q=80",
     contactName: "Marcus Bell",
     contactEmail: "m.bell@campus.edu",
     contactPhone: "+1 (555) 018-7733",
@@ -60,6 +63,7 @@ const FALLBACK_DEFAULT_ITEMS = [
     location: "Engineering Hall, Room 304",
     date: "2026-10-12",
     description: "Black casing with initials 'J.K.' engraved on the slide-on cover. Battery was at 60%.",
+    image: "https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?w=600&auto=format&fit=crop&q=80",
     contactName: "TA Sarah Miller",
     contactEmail: "s.miller@campus.edu",
     contactPhone: "+1 (555) 012-3489",
@@ -74,6 +78,7 @@ const FALLBACK_DEFAULT_ITEMS = [
     location: "North Campus Bus Terminal",
     date: "2026-10-12",
     description: "Contains metro transit card and library pass. No cash, but sentimental value.",
+    image: "https://images.unsplash.com/photo-1627123424574-724758594e93?w=600&auto=format&fit=crop&q=80",
     contactName: "Jordan Patel",
     contactEmail: "jordan.p@campus.edu",
     contactPhone: "+1 (555) 016-5541",
@@ -88,6 +93,7 @@ const FALLBACK_DEFAULT_ITEMS = [
     location: "Science Quad Garden Bench",
     date: "2026-10-09",
     description: "Two brass keys, one electronic fob, attached to a crimson university lanyard.",
+    image: "https://images.unsplash.com/photo-1582139329536-e7284fece509?w=600&auto=format&fit=crop&q=80",
     contactName: "Campus Security",
     contactEmail: "security@campus.edu",
     contactPhone: "+1 (555) 011-2000",
@@ -102,6 +108,7 @@ const FALLBACK_DEFAULT_ITEMS = [
     location: "Chemistry Building, 1st Floor Lobby",
     date: "2026-10-08",
     description: "Five-star purple spiral notebook with handwritten notes from Chem 201. Urgent need before midterm!",
+    image: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80",
     contactName: "Sophia Taylor",
     contactEmail: "s.taylor@campus.edu",
     contactPhone: "+1 (555) 017-8890",
@@ -116,6 +123,7 @@ const FALLBACK_DEFAULT_ITEMS = [
     location: "Student Union, Quiet Study Lounge",
     date: "2026-10-07",
     description: "Silver/grey headphones found in zippered travel case left on sofa near the west window.",
+    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80",
     contactName: "David Kim",
     contactEmail: "david.kim@campus.edu",
     contactPhone: "+1 (555) 015-6672",
@@ -182,7 +190,25 @@ async function testBackendConnection() {
 function getLocalFallbackItems() {
   try {
     const stored = localStorage.getItem('searchify_mock_items');
-    if (stored) return JSON.parse(stored);
+    if (stored) {
+      const items = JSON.parse(stored);
+      if (Array.isArray(items) && items.length > 0) {
+        // Upgrade legacy cached items with default sample images if missing
+        let hasUpgrade = false;
+        const upgraded = items.map(item => {
+          if (!item.image) {
+            const match = FALLBACK_DEFAULT_ITEMS.find(f => f.id === item.id || f.title === item.title);
+            if (match && match.image) {
+              hasUpgrade = true;
+              return { ...item, image: match.image };
+            }
+          }
+          return item;
+        });
+        if (hasUpgrade) saveLocalFallbackItems(upgraded);
+        return upgraded;
+      }
+    }
   } catch (e) {}
   saveLocalFallbackItems(FALLBACK_DEFAULT_ITEMS);
   return FALLBACK_DEFAULT_ITEMS;
@@ -442,8 +468,25 @@ function createItemCardHTML(item) {
   // Format date nicely
   const dateFormatted = formatDate(item.date);
 
+  // Card Image or Themed Visual Header
+  const imageMarkup = item.image
+    ? `
+      <div class="item-card-image-box">
+        <img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title)}" class="item-card-image" loading="lazy" onerror="this.onerror=null; this.closest('.item-card-image-box').classList.add('img-fallback-active');">
+        <span class="card-image-badge ${isLost ? 'badge-lost' : 'badge-found'}">${isLost ? 'LOST' : 'FOUND'}</span>
+      </div>
+    `
+    : `
+      <div class="item-card-image-box item-card-placeholder-box">
+        <span class="item-card-placeholder-icon">${icon}</span>
+        <span class="card-image-badge ${isLost ? 'badge-lost' : 'badge-found'}">${isLost ? 'LOST' : 'FOUND'}</span>
+      </div>
+    `;
+
   return `
     <div class="item-card ${isClaimed ? 'card-claimed' : ''}" data-id="${escapeHtml(item.id)}">
+      ${imageMarkup}
+
       <div class="item-card-top">
         <span class="category-pill">${icon} ${escapeHtml(item.category)}</span>
         <span class="status-badge ${statusBadgeClass}">${statusText}</span>
@@ -590,6 +633,9 @@ function initEventListeners() {
     reportForm.addEventListener('submit', handleReportFormSubmit);
   }
 
+  // Initialize image upload dropzone, file input, and URL listeners
+  initImageUpload();
+
   // Auth Modal Opener
   const btnSignIn = document.getElementById('signin-btn');
   if (btnSignIn) {
@@ -647,6 +693,9 @@ function openReportModal(defaultType = 'lost') {
   const form = document.getElementById('report-item-form');
   if (form) form.reset();
 
+  // Reset image upload dropzone & preview
+  resetImageUpload();
+
   // Set default radio type
   const typeRadio = document.querySelector(`input[name="report-type"][value="${defaultType}"]`);
   if (typeRadio) typeRadio.checked = true;
@@ -695,6 +744,7 @@ async function handleReportFormSubmit(e) {
   const contactName = (formData.get('contactName') || '').trim();
   const contactEmail = (formData.get('contactEmail') || '').trim();
   const contactPhone = (formData.get('contactPhone') || '').trim();
+  const image = (formData.get('image') || document.getElementById('report-image-data')?.value || '').trim();
 
   if (!title || !location) {
     showToast('Please provide both the item title and location.', 'error');
@@ -710,6 +760,7 @@ async function handleReportFormSubmit(e) {
     location,
     date,
     description,
+    image: image || null,
     contactName: contactName || (state.user ? state.user.name : 'Campus Student'),
     contactEmail: contactEmail || (state.user ? state.user.email : ''),
     contactPhone
@@ -717,6 +768,7 @@ async function handleReportFormSubmit(e) {
 
   try {
     const newItem = await createItemAPI(payload);
+    resetImageUpload();
     closeAllModals();
     showToast(`Success! Your ${type === 'lost' ? 'lost' : 'found'} item report has been published.`, 'success');
 
@@ -754,6 +806,20 @@ function openItemDetails(id) {
   const isClaimed = item.status === 'claimed';
   const icon = CATEGORY_ICONS[item.category] || '📦';
 
+  // Handle Detail Image Display
+  const imgWrapper = document.getElementById('detail-image-wrapper');
+  const imgEl = document.getElementById('detail-image');
+  if (imgWrapper && imgEl) {
+    if (item.image) {
+      imgEl.src = item.image;
+      imgEl.alt = item.title;
+      imgWrapper.style.display = 'block';
+    } else {
+      imgWrapper.style.display = 'none';
+      imgEl.src = '';
+    }
+  }
+
   document.getElementById('detail-category').innerHTML = `${icon} ${escapeHtml(item.category)}`;
   document.getElementById('detail-title').textContent = item.title;
   document.getElementById('detail-desc').textContent = item.description || 'No detailed description provided.';
@@ -783,6 +849,239 @@ function openItemDetails(id) {
   modal.classList.add('modal-open');
 }
 window.openItemDetails = openItemDetails;
+
+// ==========================================
+// 7. IMAGE UPLOAD & OPTIMIZATION HELPERS
+// ==========================================
+
+let activeImageMode = 'file';
+
+function switchImageTab(mode) {
+  activeImageMode = mode;
+  const fileTabBtn = document.getElementById('tab-btn-file');
+  const urlTabBtn = document.getElementById('tab-btn-url');
+  const dropzoneView = document.getElementById('image-dropzone-view');
+  const urlView = document.getElementById('image-url-view');
+  const previewBox = document.getElementById('image-preview-container');
+
+  if (fileTabBtn) fileTabBtn.classList.toggle('active', mode === 'file');
+  if (urlTabBtn) urlTabBtn.classList.toggle('active', mode === 'url');
+
+  // If an image is currently attached and previewed, keep showing preview card
+  const currentImg = document.getElementById('report-image-data')?.value;
+  if (currentImg) {
+    if (previewBox) previewBox.style.display = 'flex';
+    if (dropzoneView) dropzoneView.style.display = 'none';
+    if (urlView) urlView.style.display = 'none';
+    return;
+  }
+
+  if (mode === 'file') {
+    if (dropzoneView) dropzoneView.style.display = 'block';
+    if (urlView) urlView.style.display = 'none';
+  } else {
+    if (dropzoneView) dropzoneView.style.display = 'none';
+    if (urlView) urlView.style.display = 'block';
+  }
+}
+window.switchImageTab = switchImageTab;
+
+function initImageUpload() {
+  const fileInput = document.getElementById('report-image-file');
+  const dropzone = document.getElementById('image-dropzone');
+  const urlInput = document.getElementById('report-image-url-input');
+
+  if (fileInput) {
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (file) handleImageFile(file);
+    });
+  }
+
+  if (dropzone) {
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.classList.add('dragover');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.classList.remove('dragover');
+      });
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      const file = dt && dt.files && dt.files[0];
+      if (file) {
+        handleImageFile(file);
+      }
+    });
+  }
+
+  if (urlInput) {
+    urlInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        applyImageUrl();
+      }
+    });
+  }
+}
+
+function handleImageFile(file) {
+  if (!file) return;
+
+  if (!file.type.startsWith('image/')) {
+    showToast('Please select a valid image file (PNG, JPG, WEBP).', 'error');
+    return;
+  }
+
+  if (file.size > 10 * 1024 * 1024) {
+    showToast('Image size exceeds 10MB limit. Please choose a smaller file.', 'error');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const rawDataUrl = e.target.result;
+    // Auto-compress and scale to max 1200x1200px to ensure fast loads and fit well within storage
+    compressImage(rawDataUrl, 1200, 1200, 0.82, (optimizedDataUrl) => {
+      const sizeStr = formatBytes(Math.round(optimizedDataUrl.length * 0.75));
+      setImagePreview(optimizedDataUrl, file.name, sizeStr);
+      showToast('Photo attached successfully!', 'success');
+    });
+  };
+  reader.onerror = () => {
+    showToast('Could not read image file.', 'error');
+  };
+  reader.readAsDataURL(file);
+}
+
+function compressImage(dataUrl, maxWidth, maxHeight, quality, callback) {
+  const img = new Image();
+  img.onload = () => {
+    let width = img.width;
+    let height = img.height;
+
+    if (width > maxWidth || height > maxHeight) {
+      if (width / maxWidth > height / maxHeight) {
+        height = Math.round((height * maxWidth) / width);
+        width = maxWidth;
+      } else {
+        width = Math.round((width * maxHeight) / height);
+        height = maxHeight;
+      }
+    }
+
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      const optimized = canvas.toDataURL('image/jpeg', quality);
+      callback(optimized);
+    } catch (err) {
+      console.warn('Canvas compression fallback to raw dataUrl:', err);
+      callback(dataUrl);
+    }
+  };
+  img.onerror = () => {
+    callback(dataUrl);
+  };
+  img.src = dataUrl;
+}
+
+function applyImageUrl() {
+  const urlInput = document.getElementById('report-image-url-input');
+  if (!urlInput) return;
+  const url = urlInput.value.trim();
+
+  if (!url) {
+    showToast('Please paste a valid image URL.', 'error');
+    return;
+  }
+
+  if (!/^https?:\/\//i.test(url)) {
+    showToast('Image URL must start with http:// or https://', 'error');
+    return;
+  }
+
+  showToast('Verifying image link...', 'info');
+  const testImg = new Image();
+  testImg.onload = () => {
+    let shortName = 'Web Image';
+    try {
+      const u = new URL(url);
+      const parts = u.pathname.split('/').filter(Boolean);
+      shortName = parts.length > 0 ? parts[parts.length - 1] : u.hostname;
+      if (shortName.length > 25) shortName = shortName.substring(0, 22) + '...';
+    } catch (e) {}
+
+    setImagePreview(url, shortName, 'Web URL');
+    showToast('Image link attached!', 'success');
+  };
+  testImg.onerror = () => {
+    showToast('Could not load image from this URL. Please check the link or CORS policy.', 'error');
+  };
+  testImg.src = url;
+}
+window.applyImageUrl = applyImageUrl;
+
+function setImagePreview(src, filename, sizeLabel) {
+  const previewBox = document.getElementById('image-preview-container');
+  const previewImg = document.getElementById('image-preview-img');
+  const previewName = document.getElementById('preview-filename');
+  const previewStatus = document.getElementById('preview-filesize');
+  const hiddenData = document.getElementById('report-image-data');
+  const dropzoneView = document.getElementById('image-dropzone-view');
+  const urlView = document.getElementById('image-url-view');
+
+  if (previewImg) previewImg.src = src;
+  if (previewName) previewName.textContent = filename || 'Item Photo';
+  if (previewStatus) previewStatus.textContent = sizeLabel ? `${sizeLabel} • Ready ✓` : 'Ready ✓';
+  if (hiddenData) hiddenData.value = src;
+
+  if (previewBox) previewBox.style.display = 'flex';
+  if (dropzoneView) dropzoneView.style.display = 'none';
+  if (urlView) urlView.style.display = 'none';
+}
+
+function removeSelectedImage() {
+  const previewBox = document.getElementById('image-preview-container');
+  const previewImg = document.getElementById('image-preview-img');
+  const hiddenData = document.getElementById('report-image-data');
+  const fileInput = document.getElementById('report-image-file');
+  const urlInput = document.getElementById('report-image-url-input');
+
+  if (previewImg) previewImg.src = '';
+  if (hiddenData) hiddenData.value = '';
+  if (fileInput) fileInput.value = '';
+  if (urlInput) urlInput.value = '';
+
+  if (previewBox) previewBox.style.display = 'none';
+  switchImageTab(activeImageMode || 'file');
+}
+window.removeSelectedImage = removeSelectedImage;
+
+function resetImageUpload() {
+  activeImageMode = 'file';
+  removeSelectedImage();
+}
+window.resetImageUpload = resetImageUpload;
+
+function formatBytes(bytes) {
+  if (!bytes) return '';
+  const kb = bytes / 1024;
+  if (kb < 1024) return `${Math.round(kb)} KB`;
+  return `${(kb / 1024).toFixed(1)} MB`;
+}
 
 async function quickClaimItem(id) {
   const item = state.items.find(i => i.id === id);

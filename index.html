@@ -177,6 +177,59 @@
                     <textarea id="report-desc" name="description" rows="3" placeholder="Provide distinct characteristics, color, brand, condition..." class="form-textarea"></textarea>
                 </div>
 
+                <!-- Item Photo / Image Option -->
+                <div class="form-group image-upload-group">
+                    <div class="image-label-row">
+                        <label class="form-label" for="report-image-file">Item Photo (Recommended)</label>
+                        <div class="image-mode-toggle">
+                            <button type="button" class="btn-toggle-img active" id="tab-btn-file" onclick="switchImageTab('file')">📁 Upload Photo</button>
+                            <button type="button" class="btn-toggle-img" id="tab-btn-url" onclick="switchImageTab('url')">🔗 Image URL</button>
+                        </div>
+                    </div>
+
+                    <!-- Hidden input holding final image data (Base64 data-URL or web URL) -->
+                    <input type="hidden" id="report-image-data" name="image" value="">
+
+                    <!-- File Dropzone View -->
+                    <div id="image-dropzone-view" class="image-input-view">
+                        <div class="image-dropzone" id="image-dropzone">
+                            <input type="file" id="report-image-file" accept="image/png, image/jpeg, image/jpg, image/webp" class="file-hidden-input">
+                            <div class="dropzone-content">
+                                <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                    <polyline points="21 15 16 10 5 21"></polyline>
+                                </svg>
+                                <p class="dropzone-main-text"><strong>Click to upload</strong> or drag &amp; drop photo</p>
+                                <p class="dropzone-sub-text">PNG, JPG, WEBP &bull; Max 10MB (auto-optimized)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- URL Input View -->
+                    <div id="image-url-view" class="image-input-view" style="display: none;">
+                        <div class="url-input-wrap">
+                            <input type="url" id="report-image-url-input" placeholder="https://example.com/photo.jpg" class="form-input">
+                            <button type="button" class="btn-apply-url" id="btn-apply-url" onclick="applyImageUrl()">Attach Link</button>
+                        </div>
+                        <p class="dropzone-sub-text">Paste a direct web link to a photo of the item</p>
+                    </div>
+
+                    <!-- Live Image Preview Card -->
+                    <div id="image-preview-container" class="image-preview-container" style="display: none;">
+                        <div class="preview-thumbnail-box">
+                            <img id="image-preview-img" src="" alt="Selected item photo">
+                        </div>
+                        <div class="preview-info-box">
+                            <span class="preview-name" id="preview-filename">photo.jpg</span>
+                            <span class="preview-status" id="preview-filesize">Photo attached ✓</span>
+                        </div>
+                        <button type="button" class="btn-remove-preview" id="btn-remove-preview" onclick="removeSelectedImage()" title="Remove this photo">
+                            &times; Remove
+                        </button>
+                    </div>
+                </div>
+
                 <div class="form-row">
                     <div class="form-group form-col">
                         <label class="form-label" for="report-contact-name">Your Name</label>
@@ -212,6 +265,11 @@
                 <button type="button" class="modal-close-btn" onclick="closeAllModals()">&times;</button>
             </div>
             <div class="modal-body">
+                <!-- Large Item Photo Showcase in Detail Modal -->
+                <div id="detail-image-wrapper" class="detail-image-wrapper" style="display: none;">
+                    <img id="detail-image" class="detail-image" src="" alt="Item photo">
+                </div>
+
                 <h2 id="detail-title" class="detail-heading">Item Title</h2>
                 <p id="detail-desc" class="detail-description">Full item description text goes here...</p>
 
