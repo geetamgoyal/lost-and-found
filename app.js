@@ -209,7 +209,7 @@ function getLocalFallbackItems() {
         return upgraded;
       }
     }
-  } catch (e) {}
+  } catch (e) { }
   saveLocalFallbackItems(FALLBACK_DEFAULT_ITEMS);
   return FALLBACK_DEFAULT_ITEMS;
 }
@@ -217,7 +217,7 @@ function getLocalFallbackItems() {
 function saveLocalFallbackItems(items) {
   try {
     localStorage.setItem('searchify_mock_items', JSON.stringify(items));
-  } catch (e) {}
+  } catch (e) { }
 }
 
 // ==========================================
@@ -365,6 +365,54 @@ async function claimItemAPI(id) {
   return null;
 }
 
+async function deleteItemAPI(id) {
+  if (state.isBackendOnline) {
+    try {
+      const res = await fetch(`${API_BASE}/items/${id}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        return true;
+      }
+    } catch (err) {
+      console.error('Error deleting item via API:', err);
+    }
+  }
+
+  // Fallback
+  let items = getLocalFallbackItems();
+  items = items.filter(i => i.id !== id);
+  saveLocalFallbackItems(items);
+  return true;
+}
+
+// Option B: Determine relationship between logged in user and item
+function getUserItemRelationship(item) {
+  if (!state.user) {
+    return {
+      isAuthenticated: false,
+      isOwner: false,
+      isAdmin: false
+    };
+  }
+
+  const userEmail = (state.user.email || '').toLowerCase().trim();
+  const itemEmail = (item.contactEmail || '').toLowerCase().trim();
+  const userName = (state.user.name || '').toLowerCase().trim();
+  const itemReporter = (item.contactName || '').toLowerCase().trim();
+
+  const isAdmin = userEmail.includes('admin') || state.user.isAdmin === true;
+  const isOwner = (userEmail && itemEmail && userEmail === itemEmail) ||
+                  (userName && itemReporter && userName === itemReporter) ||
+                  isAdmin;
+
+  return {
+    isAuthenticated: true,
+    isOwner,
+    isAdmin
+  };
+}
+
 // ==========================================
 // 2. STATS & NUMBERS ANIMATION
 // ==========================================
@@ -456,6 +504,7 @@ function createItemCardHTML(item) {
   const isLost = item.type === 'lost';
   const isClaimed = item.status === 'claimed';
   const icon = CATEGORY_ICONS[item.category] || '📦';
+  const rel = getUserItemRelationship(item);
 
   let statusBadgeClass = isLost ? 'badge-lost' : 'badge-found';
   let statusText = isLost ? 'LOST' : 'FOUND';
@@ -474,17 +523,61 @@ function createItemCardHTML(item) {
       <div class="item-card-image-box">
         <img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title)}" class="item-card-image" loading="lazy" onerror="this.onerror=null; this.closest('.item-card-image-box').classList.add('img-fallback-active');">
         <span class="card-image-badge ${isLost ? 'badge-lost' : 'badge-found'}">${isLost ? 'LOST' : 'FOUND'}</span>
+        ${rel.isOwner ? `<span class="card-owner-badge">👤 Your Post</span>` : ''}
       </div>
     `
     : `
       <div class="item-card-image-box item-card-placeholder-box">
         <span class="item-card-placeholder-icon">${icon}</span>
         <span class="card-image-badge ${isLost ? 'badge-lost' : 'badge-found'}">${isLost ? 'LOST' : 'FOUND'}</span>
+        ${rel.isOwner ? `<span class="card-owner-badge">👤 Your Post</span>` : ''}
       </div>
     `;
 
+  // Option B: Dynamic actions based on Auth and Relationship
+  let actionButtonsHtml = '';
+
+  if (isClaimed) {
+    actionButtonsHtml = `
+      <button type="button" class="btn-card-action" onclick="openItemDetails('${escapeHtml(item.id)}')">
+        View Details
+      </button>
+      <span class="claimed-tag">✓ Resolved</span>
+    `;
+  } else if (!rel.isAuthenticated) {
+    // 1) Guest / Signed Out
+    actionButtonsHtml = `
+      <button type="button" class="btn-card-action" onclick="openItemDetails('${escapeHtml(item.id)}')">
+        View Details
+      </button>
+      <button type="button" class="btn-card-auth-hint" onclick="openAuthModal()" title="Sign in to claim or resolve">
+        Sign in to Claim
+      </button>
+    `;
+  } else if (rel.isOwner) {
+    // 2) Original Reporter (Owner of the post)
+    actionButtonsHtml = `
+      <button type="button" class="btn-card-action" onclick="openItemDetails('${escapeHtml(item.id)}')">
+        View Details
+      </button>
+      <button type="button" class="btn-card-resolve" onclick="ownerResolveItem('${escapeHtml(item.id)}')">
+        ✓ Resolve
+      </button>
+    `;
+  } else {
+    // 3) Another signed-in student
+    actionButtonsHtml = `
+      <button type="button" class="btn-card-action" onclick="openItemDetails('${escapeHtml(item.id)}')">
+        View Details
+      </button>
+      <button type="button" class="btn-card-claim" onclick="studentClaimItem('${escapeHtml(item.id)}')">
+        ${isLost ? 'Found This!' : 'Claim Item'}
+      </button>
+    `;
+  }
+
   return `
-    <div class="item-card ${isClaimed ? 'card-claimed' : ''}" data-id="${escapeHtml(item.id)}">
+    <div class="item-card ${isClaimed ? 'card-claimed' : ''} ${rel.isOwner ? 'card-own-post' : ''}" data-id="${escapeHtml(item.id)}">
       ${imageMarkup}
 
       <div class="item-card-top">
@@ -518,16 +611,7 @@ function createItemCardHTML(item) {
       </div>
 
       <div class="item-card-actions">
-        <button type="button" class="btn-card-action" onclick="openItemDetails('${escapeHtml(item.id)}')">
-          View Details
-        </button>
-        ${!isClaimed ? `
-          <button type="button" class="btn-card-claim" onclick="quickClaimItem('${escapeHtml(item.id)}')">
-            ${isLost ? 'Found This!' : 'This is Mine!'}
-          </button>
-        ` : `
-          <span class="claimed-tag">✓ Resolved</span>
-        `}
+        ${actionButtonsHtml}
       </div>
     </div>
   `;
@@ -820,14 +904,37 @@ function openItemDetails(id) {
     }
   }
 
+  const rel = getUserItemRelationship(item);
+  const roleBanner = document.getElementById('detail-role-banner');
+  const deleteBtn = document.getElementById('detail-delete-btn');
+  const contactBtn = document.getElementById('detail-contact-btn');
+  const claimBtn = document.getElementById('detail-claim-btn');
+
+  // Contact info privacy masking
+  const emailEl = document.getElementById('detail-email');
+  const phoneEl = document.getElementById('detail-phone');
+  const reporterEl = document.getElementById('detail-reporter');
+
+  if (rel.isAuthenticated) {
+    emailEl.textContent = item.contactEmail || 'Not provided';
+    phoneEl.textContent = item.contactPhone || 'Not provided';
+    reporterEl.textContent = item.contactName || 'Campus Community Member';
+  } else {
+    // Mask contact details for signed-out guests
+    const rawEmail = item.contactEmail || '';
+    const maskedEmail = rawEmail.includes('@')
+      ? rawEmail[0] + '***@' + rawEmail.split('@')[1]
+      : 'Protected';
+    emailEl.textContent = `${maskedEmail} (Sign in to view)`;
+    phoneEl.textContent = 'Protected (Sign in to view)';
+    reporterEl.textContent = item.contactName ? `${item.contactName.split(' ')[0]} (Verified Student)` : 'Campus Community Member';
+  }
+
   document.getElementById('detail-category').innerHTML = `${icon} ${escapeHtml(item.category)}`;
   document.getElementById('detail-title').textContent = item.title;
   document.getElementById('detail-desc').textContent = item.description || 'No detailed description provided.';
   document.getElementById('detail-location').textContent = item.location;
   document.getElementById('detail-date').textContent = formatDate(item.date);
-  document.getElementById('detail-reporter').textContent = item.contactName || 'Campus Community Member';
-  document.getElementById('detail-email').textContent = item.contactEmail || 'Protected / Available upon verification';
-  document.getElementById('detail-phone').textContent = item.contactPhone || 'Not provided';
 
   const statusBadge = document.getElementById('detail-status');
   if (statusBadge) {
@@ -835,14 +942,67 @@ function openItemDetails(id) {
     statusBadge.textContent = isClaimed ? 'CLAIMED / RECOVERED' : (isLost ? 'LOST ITEM' : 'FOUND ITEM');
   }
 
-  const claimBtn = document.getElementById('detail-claim-btn');
+  // Option B: Dynamic Role Banner
+  if (roleBanner) {
+    if (isClaimed) {
+      roleBanner.className = 'detail-resolved-banner';
+      roleBanner.style.display = 'block';
+      roleBanner.innerHTML = `✓ This item has been resolved and recovered${item.claimedBy ? ' by <strong>' + escapeHtml(item.claimedBy) + '</strong>' : ''}.`;
+    } else if (rel.isOwner) {
+      roleBanner.className = 'detail-owner-banner';
+      roleBanner.style.display = 'block';
+      roleBanner.innerHTML = `👤 <strong>Your Report:</strong> You posted this item. You can mark it resolved or delete this post.`;
+    } else if (!rel.isAuthenticated) {
+      roleBanner.className = 'detail-owner-banner';
+      roleBanner.style.display = 'block';
+      roleBanner.innerHTML = `🔒 <strong>Guest View:</strong> Sign in with your campus account to view full reporter contact details or claim this item.`;
+    } else {
+      roleBanner.style.display = 'none';
+      roleBanner.innerHTML = '';
+    }
+  }
+
+  // Option B: Modal Action Buttons
+  if (deleteBtn) {
+    if (rel.isOwner && !isClaimed) {
+      deleteBtn.style.display = 'inline-block';
+      deleteBtn.onclick = () => ownerDeleteItem(item.id);
+    } else {
+      deleteBtn.style.display = 'none';
+    }
+  }
+
+  if (contactBtn) {
+    if (rel.isAuthenticated && !rel.isOwner && item.contactEmail && !isClaimed) {
+      contactBtn.style.display = 'inline-flex';
+      contactBtn.href = `mailto:${encodeURIComponent(item.contactEmail)}?subject=${encodeURIComponent('Searchify Campus Lost & Found: ' + item.title)}`;
+      contactBtn.textContent = `✉ Contact ${item.contactName ? item.contactName.split(' ')[0] : 'Reporter'}`;
+    } else {
+      contactBtn.style.display = 'none';
+    }
+  }
+
   if (claimBtn) {
     if (isClaimed) {
       claimBtn.style.display = 'none';
+    } else if (!rel.isAuthenticated) {
+      claimBtn.style.display = 'inline-block';
+      claimBtn.className = 'btn-primary';
+      claimBtn.textContent = '🔑 Sign In to Claim / Contact';
+      claimBtn.onclick = () => {
+        closeAllModals();
+        openAuthModal();
+      };
+    } else if (rel.isOwner) {
+      claimBtn.style.display = 'inline-block';
+      claimBtn.className = 'btn-primary';
+      claimBtn.textContent = '✓ Mark as Resolved';
+      claimBtn.onclick = () => ownerResolveItem(item.id);
     } else {
       claimBtn.style.display = 'inline-block';
+      claimBtn.className = 'btn-primary';
       claimBtn.textContent = isLost ? '✓ I Found This Item' : '✓ Claim This Item';
-      claimBtn.onclick = () => confirmClaimItem(item.id);
+      claimBtn.onclick = () => studentClaimItem(item.id);
     }
   }
 
@@ -1022,7 +1182,7 @@ function applyImageUrl() {
       const parts = u.pathname.split('/').filter(Boolean);
       shortName = parts.length > 0 ? parts[parts.length - 1] : u.hostname;
       if (shortName.length > 25) shortName = shortName.substring(0, 22) + '...';
-    } catch (e) {}
+    } catch (e) { }
 
     setImagePreview(url, shortName, 'Web URL');
     showToast('Image link attached!', 'success');
@@ -1083,30 +1243,76 @@ function formatBytes(bytes) {
   return `${(kb / 1024).toFixed(1)} MB`;
 }
 
-async function quickClaimItem(id) {
+// Option B Action Handlers: Owner Resolve, Owner Delete, and Student Claim
+async function ownerResolveItem(id) {
   const item = state.items.find(i => i.id === id);
   if (!item) return;
-  const promptText = item.type === 'lost' 
-    ? `Have you found "${item.title}" and want to mark it as resolved?`
-    : `Is "${item.title}" yours and you want to claim it?`;
 
-  if (confirm(promptText)) {
-    await confirmClaimItem(id);
-  }
-}
-window.quickClaimItem = quickClaimItem;
+  if (!confirm(`Confirm that "${item.title}" has been recovered/resolved? This will close your report.`)) return;
 
-async function confirmClaimItem(id) {
   try {
-    const updated = await claimItemAPI(id);
+    await claimItemAPI(id);
     closeAllModals();
-    showToast('Success! Item has been marked as resolved & recovered.', 'success');
+    showToast('Your item has been marked as recovered & resolved!', 'success');
     await loadItems();
     await loadStats();
   } catch (err) {
-    showToast('Failed to claim item. Please try again.', 'error');
+    showToast('Failed to resolve report.', 'error');
   }
 }
+window.ownerResolveItem = ownerResolveItem;
+
+async function ownerDeleteItem(id) {
+  const item = state.items.find(i => i.id === id);
+  if (!item) return;
+
+  if (!confirm(`Are you sure you want to permanently delete your report for "${item.title}"? This cannot be undone.`)) return;
+
+  try {
+    await deleteItemAPI(id);
+    closeAllModals();
+    showToast('Your item report has been permanently deleted.', 'info');
+    await loadItems();
+    await loadStats();
+  } catch (err) {
+    showToast('Failed to delete report. Please try again.', 'error');
+  }
+}
+window.ownerDeleteItem = ownerDeleteItem;
+
+async function studentClaimItem(id) {
+  const item = state.items.find(i => i.id === id);
+  if (!item) return;
+
+  if (!state.user) {
+    showToast('Please sign in to claim this item or report it found.', 'info');
+    openAuthModal();
+    return;
+  }
+
+  const isLost = item.type === 'lost';
+  const promptText = isLost
+    ? `Have you found "${item.title}"? This will mark the item as recovered by you.`
+    : `Is "${item.title}" your belonging? This will submit a claim for this item under ${state.user.name}.`;
+
+  if (!confirm(promptText)) return;
+
+  try {
+    await claimItemAPI(id);
+    closeAllModals();
+    showToast(`Success! Item marked as ${isLost ? 'recovered & resolved' : 'claimed'}.`, 'success');
+    await loadItems();
+    await loadStats();
+  } catch (err) {
+    showToast('Failed to process claim. Please try again.', 'error');
+  }
+}
+window.studentClaimItem = studentClaimItem;
+
+async function confirmClaimItem(id) {
+  await studentClaimItem(id);
+}
+window.confirmClaimItem = confirmClaimItem;
 
 // ==========================================
 // 7. USER AUTHENTICATION & PROFILE
@@ -1119,7 +1325,7 @@ function initAuth() {
       state.user = JSON.parse(saved);
       renderUserNavbar();
     }
-  } catch (e) {}
+  } catch (e) { }
 }
 
 function openAuthModal() {
@@ -1168,9 +1374,10 @@ async function handleAuthSubmit(e) {
   state.user = user;
   try {
     localStorage.setItem('searchify_user', JSON.stringify(user));
-  } catch (e) {}
+  } catch (e) { }
 
   renderUserNavbar();
+  renderItems(state.items);
   closeAllModals();
   showToast(`Welcome back, ${user.name}!`, 'success');
 }
@@ -1198,8 +1405,9 @@ function signOut() {
   state.user = null;
   try {
     localStorage.removeItem('searchify_user');
-  } catch (e) {}
+  } catch (e) { }
   renderUserNavbar();
+  renderItems(state.items);
   showToast('You have been signed out.', 'info');
 }
 window.signOut = signOut;

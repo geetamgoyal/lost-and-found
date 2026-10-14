@@ -270,6 +270,9 @@
                     <img id="detail-image" class="detail-image" src="" alt="Item photo">
                 </div>
 
+                <!-- Dynamic Option B Role Banner -->
+                <div id="detail-role-banner" style="display: none;"></div>
+
                 <h2 id="detail-title" class="detail-heading">Item Title</h2>
                 <p id="detail-desc" class="detail-description">Full item description text goes here...</p>
 
@@ -296,8 +299,10 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer" id="detail-modal-footer">
                 <button type="button" class="btn-secondary" onclick="closeAllModals()">Close</button>
+                <button type="button" id="detail-delete-btn" class="btn-danger" style="display: none;">🗑 Delete Report</button>
+                <a id="detail-contact-btn" class="btn-secondary-action" style="display: none;" href="#">✉ Contact Reporter</a>
                 <button type="button" id="detail-claim-btn" class="btn-primary">✓ Claim Item</button>
             </div>
         </div>
