@@ -403,7 +403,7 @@ app.post('/api/reset', (req, res) => {
 });
 
 // Start Server
-app.listen(PORT, () => {
+  app.listen(PORT, "0.0.0.0", () => {
   console.log(`===============================================`);
   console.log(`Searchify Lost & Found Server running on port ${PORT}`);
   console.log(`Access website: http://localhost:${PORT}`);
