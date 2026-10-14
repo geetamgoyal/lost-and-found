@@ -162,7 +162,25 @@ function writeItems(items) {
 }
 
 // Middleware
-app.use(cors());
+
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  "http://localhost:5500",
+  "http://127.0.0.1:5500",
+  "http://localhost:3000"
+].filter(Boolean);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests without an Origin header
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error("Origin not allowed by CORS"));
+  }
+}));
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -199,8 +217,8 @@ app.get('/api/stats', (req, res) => {
   // Base campus statistics + dynamic current session increments
   const baseLost = 150 + totalLost;
   const baseFound = 90 + totalFound;
-  const calculatedRate = totalItems > 0 
-    ? Math.round(85 + (totalClaimed / totalItems) * 10) 
+  const calculatedRate = totalItems > 0
+    ? Math.round(85 + (totalClaimed / totalItems) * 10)
     : 89;
 
   res.json({
@@ -237,7 +255,7 @@ app.get('/api/items', (req, res) => {
 
   if (search && search.trim() !== '') {
     const q = search.trim().toLowerCase();
-    items = items.filter(item => 
+    items = items.filter(item =>
       item.title.toLowerCase().includes(q) ||
       item.description.toLowerCase().includes(q) ||
       item.location.toLowerCase().includes(q) ||
