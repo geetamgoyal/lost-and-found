@@ -1,51 +1,155 @@
-# Searchify - Campus Lost & Found Portal
+# 🔎 Searchify — Lost & Found Portal
 
-A full-stack web application designed to help students and staff quickly report, search, and reconnect with lost and found belongings across the university campus.
+**Find what's lost. Return what's found.**
 
-## 🚀 Features
+Searchify is a campus-focused Lost & Found portal designed to help students and staff report, discover, and recover misplaced belongings. It provides a simple interface for reporting lost or found items, searching listings, and managing item status.
 
-- **Node.js Express Backend REST API**:
-  - `GET /api/stats`: Dynamic statistics with live session counts.
-  - `GET /api/items`: Filter items by type (Lost/Found/Claimed), category, and live search keyword.
-  - `GET /api/items/:id`: Item details lookup.
-  - `POST /api/items`: Report new lost or found items with immediate persistence in `data/items.json`.
-  - `PATCH /api/items/:id/claim`: Mark item as claimed/recovered.
-  - `POST /api/auth/login`: Campus student authentication with quick demo credentials.
-  - `POST /api/reset`: Reset mock data to original defaults.
-- **Rich Campus Mock Data**: Pre-loaded with realistic campus items (AirPods, Student IDs, Hydro Flask, Graphing Calculator, Keys, Notes, Headphones).
-- **Interactive UI & Real-Time Filtering**:
-  - **Live Search**: Instant filtering as you type item name, location, or keywords.
-  - **Filter Tabs**: Filter by *All Items*, *Lost Items*, *Found Items*, and *Resolved / Claimed* with dynamic counts.
-  - **Category Filter**: Electronics, ID & Cards, Wallets & Keys, Books & Notes, Clothing & Personal, and Other.
-  - **Animated Stats**: Counter animations for lost items, found items, success rates, and active users.
-- **Glassmorphic Modern Design**: Built with Google Font Plus Jakarta Sans, backdrop blur effects, responsive cards grid, status badges, and smooth micro-animations.
-- **Modals & Toast Notifications**:
-  - Report Lost/Found modal with form validation.
-  - Item Details & Claim modal with instant recovery resolution.
-  - Campus Sign In modal with quick 1-click demo login.
-  - Floating toast notifications for real-time user feedback.
-- **Offline / Standalone Fallback**: Includes a fallback client store using `localStorage` so the frontend also works if opened standalone.
+## ✨ Features
 
-## 📦 Tech Stack
-- **Backend**: Node.js, Express, CORS
-- **Frontend**: HTML5, Vanilla CSS3 (Custom Glassmorphism Design System), JavaScript (ES6+)
-- **Data Storage**: JSON-based mock database (`data/items.json`)
+- 🔍 **Browse & Search:** Explore lost and found listings and search by keywords.
+- 📝 **Report Items:** Submit details about lost or found belongings.
+- 🗂️ **Category Filtering:** Organize items by category and type.
+- 📍 **Location Details:** View where an item was lost or found.
+- 📊 **Dashboard Statistics:** View portal statistics and item counts.
+- ✅ **Claim & Resolve:** Update item status when an item is recovered.
+- 🔐 **Mock Authentication:** Demonstration login and registration functionality.
+- 📱 **Responsive Interface:** Designed for convenient use across screen sizes.
+- 💾 **JSON-Based Storage:** Uses a JSON file for demonstration data.
 
-## 🛠️ Getting Started
+## 🛠️ Tech Stack
 
-### 1. Install Dependencies
+| Technology | Purpose |
+|---|---|
+| HTML5 | Page structure |
+| CSS3 | Styling and responsive layout |
+| JavaScript (ES6+) | Frontend functionality |
+| Node.js | Backend runtime |
+| Express.js | REST API and server |
+| CORS | Cross-origin API access |
+| JSON | Demo data storage |
+| Git & GitHub | Version control and collaboration |
+| Vercel | Frontend deployment |
+| Render | Backend deployment |
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) installed
+- Git installed
+- A web browser
+- A code editor such as VS Code
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/geetamgoyal/lost-and-found.git
+cd lost-and-found
+```
+
+### 2. Install dependencies
+
 ```bash
 npm install
 ```
 
-### 2. Start the Backend Server
+### 3. Start the backend server
+
 ```bash
 npm start
 ```
-Or with auto-reload in development:
-```bash
-npm run dev
+
+The server runs at:
+
+```text
+http://localhost:3000
 ```
 
-### 3. Open in Browser
-Visit **[http://localhost:3000](http://localhost:3000)** in your browser.
+### 4. Open the application
+
+If the frontend files are served by Express, open:
+
+```text
+http://localhost:3000
+```
+
+If the frontend has been moved into a separate `frontend/` directory for deployment, open `frontend/index.html` through a local development server and configure its API URL to point to the running backend.
+
+## 🔌 API Endpoints
+
+The backend provides REST API endpoints for the application's main features.
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/api/health` | Check backend health |
+| GET | `/api/stats` | Retrieve portal statistics |
+| GET | `/api/items` | Retrieve and filter items |
+| GET | `/api/items/:id` | Retrieve one item |
+| POST | `/api/items` | Report a lost or found item |
+| PATCH | `/api/items/:id/claim` | Mark an item as claimed |
+| DELETE | `/api/items/:id` | Delete an item |
+| POST | `/api/auth/login` | Demonstration login |
+| POST | `/api/auth/register` | Demonstration registration |
+| POST | `/api/reset` | Reset demo data |
+
+### Health Check
+
+Open `http://localhost:3000/api/health` to verify that the backend is running.
+
+## 📁 Project Structure
+
+```text
+lost-and-found/
+├── frontend/             # Frontend files (if separated)
+│   ├── index.html
+│   ├── app.js
+│   ├── lost&found.css
+│   └── assets/
+├── data/
+│   └── items.json        # Demo item data
+├── server.js             # Express backend
+├── package.json
+├── package-lock.json
+├── .gitignore
+└── README.md
+```
+
+*The `frontend/` directory is used if you separate the static frontend for Vercel deployment. Otherwise, your frontend files may remain at the repository root.*
+
+## 🌐 Deployment
+
+Searchify can be deployed using separate frontend and backend services.
+
+- **Frontend:** [Vercel](https://vercel.com/)
+- **Backend:** [Render](https://render.com/)
+
+Configure the frontend API base URL to point to the deployed backend, and configure the backend's `FRONTEND_URL` environment variable with the deployed frontend origin for CORS.
+
+> **Note:** The project currently uses JSON-file demo storage and mock authentication. A temporary hosting filesystem may not preserve data across restarts or redeployments. Persistent storage or a database is recommended for production use.
+
+## 👥 Team Members
+
+| Team Member | Role |
+|---|---|
+| [Ayush Kumar](https://github.com/REPLACE_WITH_AYUSH_USERNAME) | Frontend Developer |
+| [Geetam Goyal](https://github.com/geetamgoyal) | Backend Developer |
+| [Gaurang Gupta](https://github.com/REPLACE_WITH_GAURANG_USERNAME) | Integration Developer & Researcher |
+
+**Note:** Replace the placeholder usernames in the Ayush Kumar and Gaurang Gupta links with their actual GitHub usernames.
+
+## 🎯 Project Objective
+
+The objective of Searchify is to make campus lost-and-found management easier by providing a centralized platform for reporting, searching, and recovering belongings.
+
+## 🔮 Future Enhancements
+
+- Database integration for persistent storage
+- Secure authentication and authorization
+- Image uploads for item listings
+- Email or in-app notifications
+- Advanced search and filtering
+- Administrative dashboard
+
+## 📄 License
+
+This project is developed as a college mini-project for educational and demonstration purposes.
