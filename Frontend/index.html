@@ -21,6 +21,7 @@
 
                 <div class="nav-buttons">
                     <button type="button" class="buttons" data-scroll-to="hero-section">Home</button>
+                    <button type="button" class="buttons" data-scroll-to="locations-section">Campus Locations</button>
                     <button type="button" class="buttons" data-scroll-to="browse-section">Browse Items</button>
                     <button type="button" class="buttons" id="nav-report-lost">Report Lost</button>
                     <button type="button" class="buttons" id="nav-report-found">Report Found</button>
@@ -79,10 +80,49 @@
             </div>
         </section>
 
+        <!-- Campus Locations Directory Section -->
+        <section class="locations-section" id="locations-section">
+            <div class="locations-header-wrap">
+                <div class="locations-badge">📍 AKGEC Campus Directory</div>
+                <h2 class="locations-heading">AKGEC Campus Locations &amp; Zones</h2>
+                <p class="locations-subheading">
+                    Ajay Kumar Garg Engineering College, Ghaziabad — Browse academic blocks, libraries, departments, canteens, hostels, and sports grounds. Select any zone or location to quickly filter items or report what you've lost or found.
+                </p>
+            </div>
+
+            <!-- Search college places -->
+            <div class="locations-search-wrap">
+                <div class="locations-search-box">
+                    <span class="locations-search-icon">🔍</span>
+                    <input type="text" id="locations-search-input" placeholder="Search AKGEC places (e.g., Central Library, CS/IT Block, Mechanical Canteen, LT Complex, Senior Boys Hostel)..." class="locations-search-input">
+                </div>
+                <span id="locations-count-badge" class="locations-count-badge">8 Categories • 70+ Verified Places</span>
+            </div>
+
+            <!-- Location Category Filter Pills -->
+            <div class="location-category-tabs" id="location-category-tabs">
+                <!-- Populated dynamically via app.js -->
+            </div>
+
+            <!-- Subcategories / Places Grid -->
+            <div class="places-grid" id="places-grid">
+                <!-- Populated dynamically via app.js -->
+            </div>
+
+            <!-- Customization Info Card -->
+            <div class="locations-customization-note">
+                <div class="note-icon">🏛️</div>
+                <div class="note-content">
+                    <strong>AKGEC Infrastructure Database:</strong>
+                    <span>Master directory built from official Ajay Kumar Garg Engineering College infrastructure tour and department records. You can further adjust entries in <code>CAMPUS_LOCATIONS</code> within <code>app.js</code>.</span>
+                </div>
+            </div>
+        </section>
+
         <!-- Browse / Items Section -->
         <section class="lost-section" id="browse-section">
             <h2 class="lost-heading">Campus Lost &amp; Found Items</h2>
-            <p class="lost-subheading">Search, filter by category, or claim recently reported items</p>
+            <p class="lost-subheading">Search, filter by category &amp; location, or claim recently reported items</p>
 
             <!-- Filter Controls Toolbar -->
             <div class="filter-toolbar">
@@ -101,16 +141,25 @@
                     </button>
                 </div>
 
-                <div class="filter-category-wrapper">
-                    <select id="category-filter" class="category-select" aria-label="Filter by category">
-                        <option value="all">All Categories</option>
-                        <option value="Electronics">Electronics</option>
-                        <option value="ID & Cards">ID &amp; Cards</option>
-                        <option value="Wallets & Keys">Wallets &amp; Keys</option>
-                        <option value="Books & Notes">Books &amp; Notes</option>
-                        <option value="Clothing & Personal">Clothing &amp; Personal</option>
-                        <option value="Other">Other</option>
-                    </select>
+                <div class="filter-dropdowns-group">
+                    <div class="filter-category-wrapper">
+                        <select id="location-filter" class="category-select" aria-label="Filter by campus location">
+                            <option value="all">📍 All Locations</option>
+                            <!-- Populated dynamically via app.js -->
+                        </select>
+                    </div>
+
+                    <div class="filter-category-wrapper">
+                        <select id="category-filter" class="category-select" aria-label="Filter by category">
+                            <option value="all">📦 All Categories</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="ID & Cards">ID &amp; Cards</option>
+                            <option value="Wallets & Keys">Wallets &amp; Keys</option>
+                            <option value="Books & Notes">Books &amp; Notes</option>
+                            <option value="Clothing & Personal">Clothing &amp; Personal</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -168,8 +217,36 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="report-location">Campus Location *</label>
-                    <input type="text" id="report-location" name="location" required placeholder="e.g. Library 2nd floor, Table 12" class="form-input">
+                    <label class="form-label">Campus Location *</label>
+                    <div class="location-selector-grid">
+                        <div class="form-subcol">
+                            <label class="form-sublabel" for="report-location-category">1. Campus Zone / Building</label>
+                            <select id="report-location-category" class="form-select" required>
+                                <option value="">-- Select Campus Zone --</option>
+                                <!-- Populated dynamically from CAMPUS_LOCATIONS -->
+                            </select>
+                        </div>
+                        <div class="form-subcol">
+                            <label class="form-sublabel" for="report-location-sub">2. Specific Room / Place</label>
+                            <select id="report-location-sub" class="form-select" required disabled>
+                                <option value="">-- First Select Zone --</option>
+                                <!-- Populated dynamically based on category -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-subcol custom-location-input-wrap" id="custom-location-wrap">
+                        <label class="form-sublabel" for="report-location-custom">Custom Place Name *</label>
+                        <input type="text" id="report-location-custom" placeholder="e.g. Lawn near East Gate, Workshop Shed 4" class="form-input">
+                    </div>
+
+                    <div class="form-subcol location-detail-col">
+                        <label class="form-sublabel" for="report-location-detail">3. Specific Spot / Room # / Landmark (Optional)</label>
+                        <input type="text" id="report-location-detail" placeholder="e.g. LT-2 Row 4, CS Lab 2 Desk 5, Reading Hall Table 12, Mech Canteen Corner" class="form-input">
+                    </div>
+
+                    <!-- Hidden consolidated location string submitted with the form -->
+                    <input type="hidden" id="report-location" name="location" value="">
                 </div>
 
                 <div class="form-group">
@@ -218,7 +295,7 @@
                     <!-- Live Image Preview Card -->
                     <div id="image-preview-container" class="image-preview-container" style="display: none;">
                         <div class="preview-thumbnail-box">
-                            <img id="image-preview-img" src="" alt="Selected item photo">
+                            <img id="image-preview-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" alt="Selected item photo">
                         </div>
                         <div class="preview-info-box">
                             <span class="preview-name" id="preview-filename">photo.jpg</span>
@@ -267,7 +344,7 @@
             <div class="modal-body">
                 <!-- Large Item Photo Showcase in Detail Modal -->
                 <div id="detail-image-wrapper" class="detail-image-wrapper" style="display: none;">
-                    <img id="detail-image" class="detail-image" src="" alt="Item photo">
+                    <img id="detail-image" class="detail-image" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" alt="Item photo">
                 </div>
 
                 <!-- Dynamic Option B Role Banner -->

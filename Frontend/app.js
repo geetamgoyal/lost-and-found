@@ -15,7 +15,7 @@ const FALLBACK_DEFAULT_ITEMS = [
     title: "Apple AirPods Pro (2nd Gen)",
     type: "lost",
     category: "Electronics",
-    location: "Central Library, 2nd Floor Study Area",
+    location: "Central Library - Reading Hall (Administrative Block)",
     date: "2026-10-11",
     description: "White MagSafe charging case with a small blue silicone carabiner strap. Lost around 4:30 PM.",
     image: "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=600&auto=format&fit=crop&q=80",
@@ -30,7 +30,7 @@ const FALLBACK_DEFAULT_ITEMS = [
     title: "University Student ID Card",
     type: "found",
     category: "ID & Cards",
-    location: "Main Dining Hall, Table 18",
+    location: "CS / IT Block Canteen",
     date: "2026-10-12",
     description: "Student ID card for Emily Chen (ID #CS-2025-4412). Handed over to the front desk.",
     image: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=600&auto=format&fit=crop&q=80",
@@ -45,7 +45,7 @@ const FALLBACK_DEFAULT_ITEMS = [
     title: "Midnight Blue Hydro Flask (32oz)",
     type: "lost",
     category: "Clothing & Personal",
-    location: "Recreation Center Gym, Court 2",
+    location: "Campus Gymnasium",
     date: "2026-10-10",
     description: "Dark blue bottle with NASA and National Parks vinyl stickers on the front. Has a dented bottom rim.",
     image: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=600&auto=format&fit=crop&q=80",
@@ -60,7 +60,7 @@ const FALLBACK_DEFAULT_ITEMS = [
     title: "TI-84 Plus CE Graphing Calculator",
     type: "found",
     category: "Electronics",
-    location: "Engineering Hall, Room 304",
+    location: "Lecture Theatre Complex (LT)",
     date: "2026-10-12",
     description: "Black casing with initials 'J.K.' engraved on the slide-on cover. Battery was at 60%.",
     image: "https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?w=600&auto=format&fit=crop&q=80",
@@ -75,7 +75,7 @@ const FALLBACK_DEFAULT_ITEMS = [
     title: "Black Leather Bifold Wallet",
     type: "lost",
     category: "Wallets & Keys",
-    location: "North Campus Bus Terminal",
+    location: "Mechanical Block Canteen",
     date: "2026-10-12",
     description: "Contains metro transit card and library pass. No cash, but sentimental value.",
     image: "https://images.unsplash.com/photo-1627123424574-724758594e93?w=600&auto=format&fit=crop&q=80",
@@ -90,7 +90,7 @@ const FALLBACK_DEFAULT_ITEMS = [
     title: "Set of Dorm Keys with Red Lanyard",
     type: "found",
     category: "Wallets & Keys",
-    location: "Science Quad Garden Bench",
+    location: "Senior Boys Hostel Complex",
     date: "2026-10-09",
     description: "Two brass keys, one electronic fob, attached to a crimson university lanyard.",
     image: "https://images.unsplash.com/photo-1582139329536-e7284fece509?w=600&auto=format&fit=crop&q=80",
@@ -102,10 +102,10 @@ const FALLBACK_DEFAULT_ITEMS = [
   },
   {
     id: "item-7",
-    title: "Spiral Notebook - Organic Chemistry",
+    title: "Spiral Notebook - Engineering Chemistry",
     type: "lost",
     category: "Books & Notes",
-    location: "Chemistry Building, 1st Floor Lobby",
+    location: "Applied Sciences - Chemistry Lab",
     date: "2026-10-08",
     description: "Five-star purple spiral notebook with handwritten notes from Chem 201. Urgent need before midterm!",
     image: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80",
@@ -120,9 +120,9 @@ const FALLBACK_DEFAULT_ITEMS = [
     title: "Sony WH-1000XM4 Noise Canceling Headphones",
     type: "found",
     category: "Electronics",
-    location: "Student Union, Quiet Study Lounge",
+    location: "Computer Center",
     date: "2026-10-07",
-    description: "Silver/grey headphones found in zippered travel case left on sofa near the west window.",
+    description: "Silver/grey headphones found in zippered travel case left on table near the west window.",
     image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80",
     contactName: "David Kim",
     contactEmail: "david.kim@campus.edu",
@@ -138,12 +138,168 @@ const state = {
   filters: {
     type: 'all',       // 'all', 'lost', 'found', 'claimed'
     category: 'all',   // 'all', or specific category
+    location: 'all',   // 'all', or specific campus location
     search: '',        // text query
   },
   user: null,          // logged in user object
   isBackendOnline: false,
   selectedItem: null,
+  activeLocationCategory: 'all',
+  locationSearchQuery: ''
 };
+
+/**
+ * =========================================================================
+ * CAMPUS LOCATIONS DIRECTORY - AKGEC GHAZIABAD
+ * Official Infrastructure Master List (Ajay Kumar Garg Engineering College)
+ * =========================================================================
+ */
+const CAMPUS_LOCATIONS = [
+  {
+    id: "academic",
+    name: "1. Academic Buildings",
+    icon: "🏛️",
+    description: "Administrative Block, CS/IT, EN/EC, Mechanical, MCA blocks & LT complex",
+    subcategories: [
+      "Administrative Block",
+      "Main Block / Back Block",
+      "Lecture Theatre Complex (LT)",
+      "CS / IT Block",
+      "EN / EC Block",
+      "Mechanical Engineering Block",
+      "MCA Block",
+      "Computer Center",
+      "Lecture Rooms and Tutorial Rooms",
+      "Seminar Halls"
+    ]
+  },
+  {
+    id: "library",
+    name: "2. Library and Study Areas",
+    icon: "📚",
+    description: "Central Library in Administrative Block, Reading Hall, Cubicles & Digital Library",
+    subcategories: [
+      "Central Library (Administrative Block)",
+      "Central Library - Reading Hall",
+      "Central Library - Study Cubicles",
+      "Central Library - Digital Library",
+      "Central Library - Faculty Reading Room",
+      "Departmental Libraries",
+      "Hostel Libraries"
+    ]
+  },
+  {
+    id: "labs",
+    name: "3. Department and Laboratory Areas",
+    icon: "🔬",
+    description: "CSE, IT, ECE, EN, Mechanical workshop, Civil & Applied Sciences labs",
+    subcategories: [
+      "Computer Science and Engineering Labs",
+      "Information Technology Labs",
+      "Electronics and Communication Engineering Labs",
+      "Electrical and Electronics Engineering Labs",
+      "Mechanical Engineering Workshop & Labs",
+      "Civil Engineering Labs",
+      "Applied Sciences - Chemistry Lab",
+      "Applied Sciences - Physics Lab",
+      "Language Lab (AS&H)",
+      "MCA Department Labs",
+      "Department Faculty Rooms & Cabins"
+    ]
+  },
+  {
+    id: "dining",
+    name: "4. Food and Refreshments",
+    icon: "☕",
+    description: "Mechanical Block canteen, CS/IT canteen, hostel messes, tuck shops & coffee points",
+    subcategories: [
+      "Mechanical Block Canteen",
+      "CS / IT Block Canteen",
+      "Junior Boys Hostel Mess",
+      "Senior Boys Hostel Mess",
+      "Girls Hostel Mess",
+      "Hostel Canteens",
+      "Hostel Provision Stores",
+      "Coffee & Tea Vending Points"
+    ]
+  },
+  {
+    id: "hostels",
+    name: "5. Hostels and Residential Areas",
+    icon: "🏢",
+    description: "Junior/Senior Boys, Girls hostel complexes, dining halls, gym & libraries",
+    subcategories: [
+      "Junior Boys Hostel Complex",
+      "Senior Boys Hostel Complex",
+      "Girls Hostel Complex",
+      "Junior Girls Hostel Complex",
+      "Hostel Mess and Dining Areas",
+      "Hostel Gymnasiums",
+      "Hostel Libraries",
+      "Hostel TV / Recreation Rooms",
+      "Hostel Utility Shops"
+    ]
+  },
+  {
+    id: "sports",
+    name: "6. Sports and Recreation",
+    icon: "⚽",
+    description: "Football ground, basketball, badminton courts, gym, faith centre & amphitheatre",
+    subcategories: [
+      "Football Ground",
+      "Basketball Court",
+      "Badminton Courts",
+      "Volleyball Court",
+      "Table Tennis Area",
+      "Pool Table Area",
+      "Gymnasium",
+      "Faith Centre",
+      "Amphitheatre"
+    ]
+  },
+  {
+    id: "services",
+    name: "7. Essential Services",
+    icon: "🏥",
+    description: "Indo-German Hospital, ATM, stationery, reprographic shops & transport area",
+    subcategories: [
+      "Indo German Hospital / On-campus Medical Facility",
+      "First Aid Facility",
+      "Administrative Offices",
+      "ATM",
+      "Stationery Shop",
+      "Reprographic / Photocopy Shops",
+      "Campus Transport Area",
+      "Main Entrance / Security Gate",
+      "Parking Areas"
+    ]
+  },
+  {
+    id: "outdoor",
+    name: "8. Outdoor and Common Areas",
+    icon: "🌳",
+    description: "Main entrance, campus lawns, landscaped gardens, internal walkways & parking",
+    subcategories: [
+      "Main Entrance and Exit",
+      "Campus Lawns",
+      "Gardens and Landscaped Areas",
+      "Internal Walkways",
+      "Amphitheatre / Open Gathering Area",
+      "Event and Exhibition Areas",
+      "Bus Pickup / Drop-off Area",
+      "Bicycle or Two-wheeler Parking"
+    ]
+  },
+  {
+    id: "other",
+    name: "9. Other Campus Locations",
+    icon: "📍",
+    description: "Custom or unlisted AKGEC location",
+    subcategories: [
+      "Custom / Unlisted Spot (Specify Below)"
+    ]
+  }
+];
 
 // Category Icons Mapping
 const CATEGORY_ICONS = {
@@ -159,6 +315,7 @@ const CATEGORY_ICONS = {
 document.addEventListener('DOMContentLoaded', () => {
   initAuth();
   initEventListeners();
+  initCampusLocations();
   testBackendConnection().then(() => {
     loadStats();
     loadItems();
@@ -264,6 +421,9 @@ async function fetchItems() {
       if (state.filters.category && state.filters.category !== 'all') {
         params.append('category', state.filters.category);
       }
+      if (state.filters.location && state.filters.location !== 'all') {
+        params.append('location', state.filters.location);
+      }
       if (state.filters.search) {
         params.append('search', state.filters.search);
       }
@@ -290,12 +450,17 @@ async function fetchItems() {
     items = items.filter(i => i.category.toLowerCase() === state.filters.category.toLowerCase());
   }
 
+  if (state.filters.location && state.filters.location !== 'all') {
+    const locLower = state.filters.location.toLowerCase();
+    items = items.filter(i => (i.location || '').toLowerCase().includes(locLower));
+  }
+
   if (state.filters.search) {
     const q = state.filters.search.toLowerCase().trim();
     items = items.filter(i =>
       i.title.toLowerCase().includes(q) ||
       i.description.toLowerCase().includes(q) ||
-      i.location.toLowerCase().includes(q) ||
+      (i.location || '').toLowerCase().includes(q) ||
       i.category.toLowerCase().includes(q)
     );
   }
@@ -750,6 +915,7 @@ function initEventListeners() {
 function clearFilters() {
   state.filters.type = 'all';
   state.filters.category = 'all';
+  state.filters.location = 'all';
   state.filters.search = '';
 
   const heroSearch = document.getElementById('hero-search-input');
@@ -757,6 +923,9 @@ function clearFilters() {
 
   const catSelect = document.getElementById('category-filter');
   if (catSelect) catSelect.value = 'all';
+
+  const locSelect = document.getElementById('location-filter');
+  if (locSelect) locSelect.value = 'all';
 
   document.querySelectorAll('.filter-tab').forEach(t => {
     t.classList.toggle('active', t.getAttribute('data-type') === 'all');
@@ -767,35 +936,330 @@ function clearFilters() {
 window.clearFilters = clearFilters;
 
 // ==========================================
+// 4B. CAMPUS LOCATIONS DIRECTORY LOGIC
+// ==========================================
+
+function initCampusLocations() {
+  renderLocationTabs();
+  renderPlacesGrid();
+  initLocationSearch();
+  populateLocationFilterDropdown();
+  initReportModalLocationSelectors();
+}
+
+function renderLocationTabs() {
+  const tabsContainer = document.getElementById('location-category-tabs');
+  if (!tabsContainer) return;
+
+  const totalPlaces = CAMPUS_LOCATIONS.reduce((sum, cat) => sum + cat.subcategories.length, 0);
+
+  let html = `
+    <button type="button" class="location-category-tab ${state.activeLocationCategory === 'all' ? 'active' : ''}" data-cat-id="all">
+      <span class="location-tab-icon">🌟</span>
+      <span>All Campus Zones</span>
+      <span class="location-tab-count">${totalPlaces}</span>
+    </button>
+  `;
+
+  CAMPUS_LOCATIONS.forEach(cat => {
+    const isActive = state.activeLocationCategory === cat.id ? 'active' : '';
+    html += `
+      <button type="button" class="location-category-tab ${isActive}" data-cat-id="${cat.id}">
+        <span class="location-tab-icon">${cat.icon}</span>
+        <span>${escapeHtml(cat.name)}</span>
+        <span class="location-tab-count">${cat.subcategories.length}</span>
+      </button>
+    `;
+  });
+
+  tabsContainer.innerHTML = html;
+
+  tabsContainer.querySelectorAll('.location-category-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabsContainer.querySelectorAll('.location-category-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.activeLocationCategory = btn.getAttribute('data-cat-id') || 'all';
+      renderPlacesGrid();
+    });
+  });
+}
+
+function renderPlacesGrid() {
+  const grid = document.getElementById('places-grid');
+  const badge = document.getElementById('locations-count-badge');
+  if (!grid) return;
+
+  const q = (state.locationSearchQuery || '').trim().toLowerCase();
+  let matchedPlaces = [];
+
+  CAMPUS_LOCATIONS.forEach(cat => {
+    if (state.activeLocationCategory !== 'all' && state.activeLocationCategory !== cat.id) {
+      return;
+    }
+
+    cat.subcategories.forEach(sub => {
+      const matchSearch = !q || sub.toLowerCase().includes(q) || cat.name.toLowerCase().includes(q);
+      if (matchSearch) {
+        matchedPlaces.push({
+          category: cat.name,
+          categoryId: cat.id,
+          icon: cat.icon,
+          name: sub
+        });
+      }
+    });
+  });
+
+  if (badge) {
+    const totalCategories = CAMPUS_LOCATIONS.length;
+    badge.textContent = `${totalCategories} Categories • ${matchedPlaces.length} Places`;
+  }
+
+  if (matchedPlaces.length === 0) {
+    grid.innerHTML = `
+      <div class="places-empty-state">
+        <span style="font-size: 32px;">🔍</span>
+        <p>No college locations found matching "${escapeHtml(q)}".</p>
+        <button type="button" class="btn-place-report" style="margin-top: 12px;" onclick="openReportModal('lost', '${escapeHtml(q).replace(/'/g, "\\'")}')">
+          ➕ Report Item With Custom Location
+        </button>
+      </div>
+    `;
+    return;
+  }
+
+  grid.innerHTML = matchedPlaces.map(p => `
+    <div class="place-card">
+      <div class="place-card-header">
+        <div class="place-icon-box">${p.icon}</div>
+        <div class="place-info">
+          <h3 class="place-name">${escapeHtml(p.name)}</h3>
+          <span class="place-category-label">${escapeHtml(p.category)}</span>
+        </div>
+      </div>
+      <div class="place-actions">
+        <button type="button" class="btn-place-filter" onclick="filterItemsByLocation('${escapeHtml(p.name).replace(/'/g, "\\'")}')">
+          🔍 View Items
+        </button>
+        <button type="button" class="btn-place-report" onclick="openReportModal('lost', '${escapeHtml(p.name).replace(/'/g, "\\'")}')">
+          ➕ Report Here
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function initLocationSearch() {
+  const searchInput = document.getElementById('locations-search-input');
+  if (!searchInput) return;
+
+  searchInput.addEventListener('input', (e) => {
+    state.locationSearchQuery = e.target.value;
+    renderPlacesGrid();
+  });
+}
+
+function filterItemsByLocation(placeName) {
+  state.filters.location = placeName;
+  const locationSelect = document.getElementById('location-filter');
+  if (locationSelect) {
+    let found = false;
+    for (let opt of locationSelect.options) {
+      if (opt.value.toLowerCase() === placeName.toLowerCase()) {
+        locationSelect.value = opt.value;
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      locationSelect.value = 'all';
+    }
+  }
+
+  loadItems();
+  const browseSection = document.getElementById('browse-section');
+  if (browseSection) {
+    browseSection.scrollIntoView({ behavior: 'smooth' });
+  }
+}
+window.filterItemsByLocation = filterItemsByLocation;
+
+function populateLocationFilterDropdown() {
+  const select = document.getElementById('location-filter');
+  if (!select) return;
+
+  let html = `<option value="all">📍 All Campus Locations</option>`;
+
+  CAMPUS_LOCATIONS.forEach(cat => {
+    html += `<optgroup label="${cat.icon} ${escapeHtml(cat.name)}">`;
+    cat.subcategories.forEach(sub => {
+      html += `<option value="${escapeHtml(sub)}">${escapeHtml(sub)}</option>`;
+    });
+    html += `</optgroup>`;
+  });
+
+  select.innerHTML = html;
+
+  select.addEventListener('change', (e) => {
+    state.filters.location = e.target.value;
+    loadItems();
+  });
+}
+
+function initReportModalLocationSelectors() {
+  const catSelect = document.getElementById('report-location-category');
+  const subSelect = document.getElementById('report-location-sub');
+  const customWrap = document.getElementById('custom-location-wrap');
+  const customInput = document.getElementById('report-location-custom');
+  const detailInput = document.getElementById('report-location-detail');
+  const hiddenLocation = document.getElementById('report-location');
+
+  if (!catSelect || !subSelect || !hiddenLocation) return;
+
+  let catHtml = `<option value="">-- Select Campus Zone / Building --</option>`;
+  CAMPUS_LOCATIONS.forEach(cat => {
+    catHtml += `<option value="${cat.id}">${cat.icon} ${escapeHtml(cat.name)}</option>`;
+  });
+  catSelect.innerHTML = catHtml;
+
+  function updateHiddenLocation() {
+    const catId = catSelect.value;
+    const catObj = CAMPUS_LOCATIONS.find(c => c.id === catId);
+    const subVal = (subSelect.value || '').trim();
+    const customVal = customInput ? (customInput.value || '').trim() : '';
+    const detailVal = detailInput ? (detailInput.value || '').trim() : '';
+
+    let fullLoc = '';
+
+    if (catId === 'other' || subVal.toLowerCase().includes('custom') || subVal.toLowerCase().includes('unlisted')) {
+      fullLoc = customVal || 'Custom Campus Location';
+    } else if (subVal) {
+      fullLoc = subVal;
+    } else if (catObj) {
+      fullLoc = catObj.name;
+    }
+
+    if (detailVal && fullLoc) {
+      fullLoc += ` (${detailVal})`;
+    } else if (detailVal && !fullLoc) {
+      fullLoc = detailVal;
+    }
+
+    hiddenLocation.value = fullLoc;
+  }
+
+  catSelect.addEventListener('change', () => {
+    const catId = catSelect.value;
+    const catObj = CAMPUS_LOCATIONS.find(c => c.id === catId);
+
+    if (!catId || !catObj) {
+      subSelect.innerHTML = `<option value="">-- First Select Zone --</option>`;
+      subSelect.disabled = true;
+      if (customWrap) customWrap.style.display = 'none';
+      hiddenLocation.value = '';
+      return;
+    }
+
+    subSelect.disabled = false;
+    let subHtml = `<option value="">-- Select Specific Place / Room --</option>`;
+    catObj.subcategories.forEach(sub => {
+      subHtml += `<option value="${escapeHtml(sub)}">${escapeHtml(sub)}</option>`;
+    });
+    subSelect.innerHTML = subHtml;
+
+    if (catId === 'other') {
+      if (customWrap) customWrap.style.display = 'block';
+    } else {
+      if (customWrap) customWrap.style.display = 'none';
+    }
+
+    updateHiddenLocation();
+  });
+
+  subSelect.addEventListener('change', () => {
+    const val = subSelect.value;
+    if (val.toLowerCase().includes('custom') || val.toLowerCase().includes('unlisted')) {
+      if (customWrap) customWrap.style.display = 'block';
+      if (customInput) customInput.focus();
+    } else {
+      if (catSelect.value !== 'other' && customWrap) {
+        customWrap.style.display = 'none';
+      }
+    }
+    updateHiddenLocation();
+  });
+
+  if (customInput) customInput.addEventListener('input', updateHiddenLocation);
+  if (detailInput) detailInput.addEventListener('input', updateHiddenLocation);
+}
+
+// ==========================================
 // 5. REPORT MODAL & FORM SUBMISSION
 // ==========================================
 
-function openReportModal(defaultType = 'lost') {
+function openReportModal(defaultType = 'lost', prefillPlace = null) {
   const modal = document.getElementById('report-modal');
   if (!modal) return;
 
   const form = document.getElementById('report-item-form');
   if (form) form.reset();
 
-  // Reset image upload dropzone & preview
   resetImageUpload();
 
-  // Set default radio type
+  const customWrap = document.getElementById('custom-location-wrap');
+  if (customWrap) customWrap.style.display = 'none';
+
   const typeRadio = document.querySelector(`input[name="report-type"][value="${defaultType}"]`);
   if (typeRadio) typeRadio.checked = true;
 
-  // Set default date to today
   const dateInput = document.getElementById('report-date');
   if (dateInput) {
     dateInput.value = new Date().toISOString().split('T')[0];
   }
 
-  // Auto-fill logged in user info if available
   if (state.user) {
     const nameInput = document.getElementById('report-contact-name');
     if (nameInput) nameInput.value = state.user.name;
     const emailInput = document.getElementById('report-contact-email');
     if (emailInput) emailInput.value = state.user.email;
+  }
+
+  // Handle prefill campus location
+  if (prefillPlace) {
+    const catSelect = document.getElementById('report-location-category');
+    const subSelect = document.getElementById('report-location-sub');
+    const customWrap = document.getElementById('custom-location-wrap');
+    const customInput = document.getElementById('report-location-custom');
+    const hiddenLocation = document.getElementById('report-location');
+
+    let matchedCat = null;
+    let matchedSub = null;
+
+    for (const cat of CAMPUS_LOCATIONS) {
+      const match = cat.subcategories.find(s => s.toLowerCase() === prefillPlace.toLowerCase());
+      if (match) {
+        matchedCat = cat;
+        matchedSub = match;
+        break;
+      }
+    }
+
+    if (matchedCat && catSelect && subSelect) {
+      catSelect.value = matchedCat.id;
+      let subHtml = `<option value="">-- Select Specific Place / Room --</option>`;
+      matchedCat.subcategories.forEach(sub => {
+        subHtml += `<option value="${escapeHtml(sub)}" ${sub === matchedSub ? 'selected' : ''}>${escapeHtml(sub)}</option>`;
+      });
+      subSelect.innerHTML = subHtml;
+      subSelect.disabled = false;
+      subSelect.value = matchedSub;
+      if (hiddenLocation) hiddenLocation.value = matchedSub;
+    } else if (catSelect && customInput) {
+      catSelect.value = 'other';
+      catSelect.dispatchEvent(new Event('change'));
+      customInput.value = prefillPlace;
+      if (hiddenLocation) hiddenLocation.value = prefillPlace;
+    }
   }
 
   updateReportModalTitle(defaultType);
@@ -822,7 +1286,7 @@ async function handleReportFormSubmit(e) {
   const type = formData.get('report-type') || 'lost';
   const title = (formData.get('title') || '').trim();
   const category = formData.get('category') || 'Other';
-  const location = (formData.get('location') || '').trim();
+  const location = (formData.get('location') || document.getElementById('report-location')?.value || '').trim();
   const date = formData.get('date') || new Date().toISOString().split('T')[0];
   const description = (formData.get('description') || '').trim();
   const contactName = (formData.get('contactName') || '').trim();
@@ -831,7 +1295,7 @@ async function handleReportFormSubmit(e) {
   const image = (formData.get('image') || document.getElementById('report-image-data')?.value || '').trim();
 
   if (!title || !location) {
-    showToast('Please provide both the item title and location.', 'error');
+    showToast('Please provide both the item title and select a campus location.', 'error');
     submitBtn.disabled = false;
     submitBtn.textContent = originalBtnText;
     return;

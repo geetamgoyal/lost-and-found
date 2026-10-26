@@ -20,7 +20,7 @@ const DEFAULT_ITEMS = [
     title: "Apple AirPods Pro (2nd Gen)",
     type: "lost",
     category: "Electronics",
-    location: "Central Library, 2nd Floor Study Area",
+    location: "Central Library - Reading Hall (Administrative Block)",
     date: "2026-10-11",
     description: "White MagSafe charging case with a small blue silicone carabiner strap. Lost around 4:30 PM.",
     image: "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=600&auto=format&fit=crop&q=80",
@@ -35,7 +35,7 @@ const DEFAULT_ITEMS = [
     title: "University Student ID Card",
     type: "found",
     category: "ID & Cards",
-    location: "Main Dining Hall, Table 18",
+    location: "CS / IT Block Canteen",
     date: "2026-10-12",
     description: "Student ID card for Emily Chen (ID #CS-2025-4412). Handed over to the front desk.",
     image: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=600&auto=format&fit=crop&q=80",
@@ -50,7 +50,7 @@ const DEFAULT_ITEMS = [
     title: "Midnight Blue Hydro Flask (32oz)",
     type: "lost",
     category: "Clothing & Personal",
-    location: "Recreation Center Gym, Court 2",
+    location: "Campus Gymnasium",
     date: "2026-10-10",
     description: "Dark blue bottle with NASA and National Parks vinyl stickers on the front. Has a dented bottom rim.",
     image: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=600&auto=format&fit=crop&q=80",
@@ -65,7 +65,7 @@ const DEFAULT_ITEMS = [
     title: "TI-84 Plus CE Graphing Calculator",
     type: "found",
     category: "Electronics",
-    location: "Engineering Hall, Room 304",
+    location: "Lecture Theatre Complex (LT)",
     date: "2026-10-12",
     description: "Black casing with initials 'J.K.' engraved on the slide-on cover. Battery was at 60%.",
     image: "https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?w=600&auto=format&fit=crop&q=80",
@@ -80,7 +80,7 @@ const DEFAULT_ITEMS = [
     title: "Black Leather Bifold Wallet",
     type: "lost",
     category: "Wallets & Keys",
-    location: "North Campus Bus Terminal",
+    location: "Mechanical Block Canteen",
     date: "2026-10-12",
     description: "Contains metro transit card and library pass. No cash, but sentimental value.",
     image: "https://images.unsplash.com/photo-1627123424574-724758594e93?w=600&auto=format&fit=crop&q=80",
@@ -95,7 +95,7 @@ const DEFAULT_ITEMS = [
     title: "Set of Dorm Keys with Red Lanyard",
     type: "found",
     category: "Wallets & Keys",
-    location: "Science Quad Garden Bench",
+    location: "Senior Boys Hostel Complex",
     date: "2026-10-09",
     description: "Two brass keys, one electronic fob, attached to a crimson university lanyard.",
     image: "https://images.unsplash.com/photo-1582139329536-e7284fece509?w=600&auto=format&fit=crop&q=80",
@@ -107,10 +107,10 @@ const DEFAULT_ITEMS = [
   },
   {
     id: "item-7",
-    title: "Spiral Notebook - Organic Chemistry",
+    title: "Spiral Notebook - Engineering Chemistry",
     type: "lost",
     category: "Books & Notes",
-    location: "Chemistry Building, 1st Floor Lobby",
+    location: "Applied Sciences - Chemistry Lab",
     date: "2026-10-08",
     description: "Five-star purple spiral notebook with handwritten notes from Chem 201. Urgent need before midterm!",
     image: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80",
@@ -125,7 +125,7 @@ const DEFAULT_ITEMS = [
     title: "Sony WH-1000XM4 Noise Canceling Headphones",
     type: "found",
     category: "Electronics",
-    location: "Student Union, Quiet Study Lounge",
+    location: "Computer Center",
     date: "2026-10-07",
     description: "Silver/grey headphones found in zippered travel case left on sofa near the west window.",
     image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80",
@@ -167,13 +167,14 @@ const allowedOrigins = [
   process.env.FRONTEND_URL,
   "http://localhost:5500",
   "http://127.0.0.1:5500",
-  "http://localhost:3000"
+  "http://localhost:3000",
+  "http://127.0.0.1:3000"
 ].filter(Boolean);
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests without an Origin header
-    if (!origin || allowedOrigins.includes(origin)) {
+    // Allow requests without an Origin header or from localhost / 127.0.0.1 on any port
+    if (!origin || allowedOrigins.includes(origin) || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
       return callback(null, true);
     }
 
@@ -185,10 +186,18 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Serve static frontend files
+const FRONTEND_DIR = fs.existsSync(path.join(__dirname, 'Frontend'))
+  ? path.join(__dirname, 'Frontend')
+  : __dirname;
+
+app.use(express.static(FRONTEND_DIR));
 app.use(express.static(__dirname));
 
 // Route root to index.html (with fallback)
 app.get('/', (req, res) => {
+  if (fs.existsSync(path.join(FRONTEND_DIR, 'index.html'))) {
+    return res.sendFile(path.join(FRONTEND_DIR, 'index.html'));
+  }
   const htmlFile = fs.existsSync(path.join(__dirname, 'index.html'))
     ? 'index.html'
     : 'lost&found.html';
@@ -239,7 +248,7 @@ app.get('/api/stats', (req, res) => {
 // Get items with filtering & search
 app.get('/api/items', (req, res) => {
   let items = readItems();
-  const { type, category, status, search } = req.query;
+  const { type, category, status, search, location } = req.query;
 
   if (type && type !== 'all') {
     items = items.filter(item => item.type.toLowerCase() === type.toLowerCase());
@@ -247,6 +256,11 @@ app.get('/api/items', (req, res) => {
 
   if (category && category !== 'all') {
     items = items.filter(item => item.category.toLowerCase() === category.toLowerCase());
+  }
+
+  if (location && location !== 'all') {
+    const locLower = location.toLowerCase();
+    items = items.filter(item => (item.location || '').toLowerCase().includes(locLower));
   }
 
   if (status && status !== 'all') {
